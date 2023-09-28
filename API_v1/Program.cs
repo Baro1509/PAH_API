@@ -25,6 +25,8 @@ builder.Services.AddScoped<IMaterialDAO, MaterialDAO>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IFeedbackDAO, FeedbackDAO>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IResponseDAO, ResponseDAO>();
+builder.Services.AddScoped<IResponseService, ResponseService>();
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
