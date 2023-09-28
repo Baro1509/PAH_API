@@ -19,6 +19,10 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IUserDAO, UserDAO>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryDAO, CategoryDAO>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IMaterialDAO, MaterialDAO>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
