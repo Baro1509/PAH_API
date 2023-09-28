@@ -22,11 +22,11 @@ namespace Service.Implement
             return _feedbackDAO.GetByProductId(productId);
         }
 
-        public void Create(Feedback feedback)
+        public void CreateFeedback(Feedback feedback)
         {
             feedback.Status = (int)Status.Available;
             feedback.Timestamp = DateTime.Now;
-            _feedbackDAO.Create(feedback);
+            _feedbackDAO.CreateFeedback(feedback);
         }
 
         //public void Delete(Feedback feedback)

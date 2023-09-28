@@ -22,10 +22,10 @@ namespace Service.Implement
             return _responseDAO.GetByFeedbackId(feedbackId);
         }
 
-        public void Create(Response response)
+        public void Reply(Response response)
         {
             response.Timestamp = DateTime.Now;
-            _responseDAO.Create(response);
+            _responseDAO.CreateResponse(response);
         }
     }
 }

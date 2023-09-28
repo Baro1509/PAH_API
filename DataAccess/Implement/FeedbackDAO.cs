@@ -16,7 +16,7 @@ namespace DataAccess.Implement
             return GetAll().FirstOrDefault(f => f.ProductId == productId && f.Status == (int)Status.Available);
         }
 
-        public void Create(Feedback feedback)
+        public void CreateFeedback(Feedback feedback)
         {
             Create(feedback);
         }

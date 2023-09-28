@@ -10,6 +10,6 @@ namespace Service
     public interface IResponseService
     {
         public Response GetByFeedbackId(int feedbackId);
-        public void Create(Response response);
+        public void Reply(Response response);
     }
 }

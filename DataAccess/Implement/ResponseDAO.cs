@@ -16,7 +16,7 @@ namespace DataAccess.Implement
             return GetAll().FirstOrDefault(f => f.FeedbackId == feedbackId);
         }
 
-        public void Create(Response response)
+        public void CreateResponse(Response response)
         {
             Create(response);
         }

@@ -35,7 +35,7 @@ namespace API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            _responseService.Create(_mapper.Map<DataAccess.Models.Response>(request));
+            _responseService.Reply(_mapper.Map<DataAccess.Models.Response>(request));
             return Ok(new BaseResponse { Code = 200, Message = "Response successfully", Data = null });
         }
     }

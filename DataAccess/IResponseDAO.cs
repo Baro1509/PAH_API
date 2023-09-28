@@ -10,6 +10,6 @@ namespace DataAccess
     public interface IResponseDAO
     {
         public Response GetByFeedbackId(int feedbackId);
-        public void Create(Response response);
+        public void CreateResponse(Response response);
     }
 }
