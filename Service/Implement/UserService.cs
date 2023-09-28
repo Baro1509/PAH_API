@@ -42,6 +42,8 @@ namespace Service.Implement {
             user.Role = (int) Role.Buyer;
             user.ProfilePicture = "To be Implemented";
             user.Status = (int) Status.Available;
+            user.CreatedAt = DateTime.Now;
+            user.UpdatedAt = DateTime.Now;
             _userDAO.Register(user);
         }
     }
