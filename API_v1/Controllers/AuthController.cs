@@ -1,5 +1,6 @@
 ﻿using API.Request;
 using API.Response;
+using API.Response.UserRes;
 using AutoMapper;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +29,7 @@ namespace API.Controllers {
             if (user == null) {
                 return Unauthorized(new ErrorResponse { Code = 401, Message = "Email or password is incorrect" });
             }
-            return Ok(new BaseResponse { Code = 200, Message = "Login successfully", Data = user});
+            return Ok(new BaseResponse { Code = 200, Message = "Login successfully", Data = _mapper.Map<UserResponse>(user)});
         }
         
         [HttpPost]
