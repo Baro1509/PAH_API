@@ -9,7 +9,8 @@ namespace DataAccess
 {
     public interface IFeedbackDAO
     {
-        public Feedback GetByProductId(int productId);
+        public Feedback GetById(int id);
+        public IQueryable<Feedback> GetAll(int productId);
         public void CreateFeedback(Feedback feedback);
         public void Update(Feedback feedback);
         public void Delete(Feedback feedback);

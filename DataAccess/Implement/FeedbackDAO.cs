@@ -11,9 +11,14 @@ namespace DataAccess.Implement
     {
         public FeedbackDAO(PlatformAntiquesHandicraftsContext context): base(context) { }
 
-        public Feedback GetByProductId(int productId)
+        public Feedback GetById(int id)
         {
-            return GetAll().FirstOrDefault(f => f.ProductId == productId && f.Status == (int)Status.Available);
+            return GetAll().FirstOrDefault(f => f.Id == id && f.Status == (int)Status.Available);
+        }
+
+        public IQueryable<Feedback> GetAll(int productId)
+        {
+            return GetAll().Where(f => f.ProductId == productId && f.Status == (int)Status.Available);
         }
 
         public void CreateFeedback(Feedback feedback)

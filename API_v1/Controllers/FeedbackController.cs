@@ -24,14 +24,21 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get(int productId)
+        public IActionResult GetById(int id)
         {
-            Feedback feedback = _feedbackService.GetByProductId(productId);
+            Feedback feedback = _feedbackService.GetById(id);
             return Ok(new BaseResponse { Code = 200, Message = "Get feedback successfully", Data = feedback });
         }
 
+        [HttpGet]
+        [Route("product")]
+        public IActionResult GetAll(int productId)
+        {
+            List<Feedback> feedbackList = _feedbackService.GetAll(productId);
+            return Ok(new BaseResponse { Code = 200, Message = "Get all feedback successfully", Data = feedbackList });
+        }
+
         [HttpPost]
-        [AllowAnonymous]
         public IActionResult Create([FromBody] FeedbackRequest request)
         {
             if(!ModelState.IsValid)

@@ -17,9 +17,14 @@ namespace Service.Implement
             _feedbackDAO = feedbackDAO;
         }
 
-        public Feedback GetByProductId(int productId)
+        public Feedback GetById(int id)
         {
-            return _feedbackDAO.GetByProductId(productId);
+            return _feedbackDAO.GetById(id);
+        }
+
+        public List<Feedback> GetAll(int productId)
+        {
+            return _feedbackDAO.GetAll(productId).ToList();
         }
 
         public void CreateFeedback(Feedback feedback)
