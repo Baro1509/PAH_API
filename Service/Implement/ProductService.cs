@@ -78,6 +78,11 @@ namespace Service.Implement
         public void UpdateProduct(int id, Product product)
         {
             Product p = _productDAO.GetProductById(id);
+            product.Id = id;
+            product.Status = p.Status;
+            product.Ratings = p.Ratings;
+            product.CreatedAt = p.CreatedAt;
+            product.UpdatedAt = DateTime.Now;
             _productDAO.UpdateProduct(product);
         }
     }

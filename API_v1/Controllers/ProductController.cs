@@ -45,11 +45,11 @@ namespace API.Controllers
             return Ok(new BaseResponse { Code = 200, Message = "Register product successfully", Data = null });
         }
 
-        //[HttpPatch]
-        //public IActionResult EditProduct([FromQuery] int id, [FromBody] ProductRequest request)
-        //{
-        //    _productService.UpdateProduct(id, _mapper.Map<Product>(request));
-        //    return Ok(new BaseResponse { Code = 200, Message = "Edit product successfully", Data = null });
-        //}
+        [HttpPatch]
+        public IActionResult EditProduct([FromQuery] int id, [FromBody] ProductRequest request)
+        {
+            _productService.UpdateProduct(id, _mapper.Map<Product>(request));
+            return Ok(new BaseResponse { Code = 200, Message = "Edit product successfully", Data = null });
+        }
     }
 }
