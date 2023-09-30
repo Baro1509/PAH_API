@@ -77,13 +77,23 @@ namespace Service.Implement
 
         public void UpdateProduct(int id, Product product)
         {
-            Product p = _productDAO.GetProductById(id);
-            product.Id = id;
-            product.Status = p.Status;
-            product.Ratings = p.Ratings;
-            product.CreatedAt = p.CreatedAt;
-            product.UpdatedAt = DateTime.Now;
-            _productDAO.UpdateProduct(product);
+            Product currentProduct = _productDAO.GetProductById(id);
+
+            currentProduct.CategoryId = product.CategoryId;
+            currentProduct.MaterialId = product.MaterialId;
+            currentProduct.Name = product.Name;
+            currentProduct.Description = product.Description;
+            currentProduct.Price = product.Price;
+            currentProduct.Dimension = product.Dimension;
+            currentProduct.Weight = product.Weight;
+            currentProduct.Origin = product.Origin;
+            currentProduct.PackageMethod = product.PackageMethod;
+            currentProduct.PackageContent = product.PackageContent;
+            currentProduct.Condition = product.Condition;
+            currentProduct.Type = product.Type;
+            currentProduct.UpdatedAt = DateTime.Now;
+
+            _productDAO.UpdateProduct(currentProduct);
         }
     }
 }
