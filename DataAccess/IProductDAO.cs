@@ -13,6 +13,6 @@ namespace DataAccess
         public IQueryable<Product> GetProducts();
         public void CreateProduct(Product product);
         public void UpdateProduct(Product product);
-        public void DeleteProduct(int id);
+        public void DeleteProduct(Product product);
     }
 }

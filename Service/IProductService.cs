@@ -9,9 +9,10 @@ namespace Service
 {
     public interface IProductService
     {
-        public List<Product> GetProducts(string? nameSearch, int categoryId, int type, int condition, int ratings, decimal priceMin, decimal priceMax, int orderBy);
+        public List<Product> GetProducts(string? nameSearch, int materialId, int categoryId, int type, int condition, int ratings, decimal priceMin, decimal priceMax, int orderBy);
         public Product GetProductById(int id);
         public void CreateProduct(Product product);
-        public void UpdateProduct(int id, Product product);
+        public Product UpdateProduct(int id, Product product);
+        public Product DeleteProduct(int id);
     }
 }

@@ -18,7 +18,7 @@ namespace Service.Implement
             _productDAO = productDAO;
         }
 
-        public List<Product> GetProducts(string? nameSearch, int categoryId, int type, int condition, int ratings, decimal priceMin, decimal priceMax, int orderBy)
+        public List<Product> GetProducts(string? nameSearch, int materialId, int categoryId, int type, int condition, int ratings, decimal priceMin, decimal priceMax, int orderBy)
         {
             List<Product> productList;
             try
@@ -27,6 +27,7 @@ namespace Service.Implement
                     .Where(p => p.Status == (int)Status.Available
                     //&& p. == (int)Status.Available
                     && (string.IsNullOrEmpty(nameSearch) || p.Name.Contains(nameSearch))
+                    && (materialId == 0 || p.MaterialId == materialId)
                     && (categoryId == 0 || p.CategoryId == categoryId)
                     && (type == 0 || p.Type == type)
                     && (condition == 0 || p.Condition == condition)
@@ -63,6 +64,10 @@ namespace Service.Implement
 
         public Product GetProductById(int id)
         {
+            if(id == null)
+            {
+                return null;
+            }
             return _productDAO.GetProductById(id);
         }
 
@@ -75,8 +80,10 @@ namespace Service.Implement
             _productDAO.CreateProduct(product);
         }
 
-        public void UpdateProduct(int id, Product product)
+        public Product UpdateProduct(int id, Product product)
         {
+            if (id == null) return null;
+
             Product currentProduct = _productDAO.GetProductById(id);
 
             currentProduct.CategoryId = product.CategoryId;
@@ -94,6 +101,22 @@ namespace Service.Implement
             currentProduct.UpdatedAt = DateTime.Now;
 
             _productDAO.UpdateProduct(currentProduct);
+
+            return currentProduct;
+        }
+
+        public Product DeleteProduct(int id)
+        {
+            if (id == null) return null;
+
+            Product currentProduct = _productDAO.GetProductById(id);
+
+            currentProduct.Status = (int)Status.Unavailable;
+            currentProduct.UpdatedAt = DateTime.Now;
+
+            _productDAO.UpdateProduct(currentProduct);
+
+            return currentProduct;
         }
     }
 }

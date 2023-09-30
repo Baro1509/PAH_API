@@ -17,48 +17,13 @@ namespace DataAccess.Implement
             return GetAll().Include(c => c.Category)
                     .Include(m => m.Material)
                     .Include(s => s.Seller);
-            //List<Product> productList;
-            //try
-            //{
-            //    var products = GetAll()
-            //        .Where(p => p.Status == (int)Status.Available
-            //        //&& p.Seller.Id == (int)Status.Available
-            //        //&& (string.IsNullOrEmpty(nameSearch) || p.Name.Contains(nameSearch))
-            //        && (categoryId == 0 || p.CategoryId == categoryId));
-            //        //&& p.Price >= priceMin
-            //        //&& (priceMax == 0 || p.Price <= priceMax));
-
-            //    //default (0): created at desc, 1: created at asc, 2: price desc, 3: price asc
-            //    switch (orderBy)
-            //    {
-            //        case 1:
-            //            products = products.OrderBy(p => p.CreatedAt);
-            //            break;
-            //        case 2:
-            //            products = products.OrderByDescending(p => p.Price);
-            //            break;
-            //        case 3:
-            //            products = products.OrderBy(p => p.Price);
-            //            break;
-            //        default:
-            //            products = products.OrderByDescending(p => p.CreatedAt);
-            //            break;
-            //    }
-
-            //    productList = products.Include(c => c.Category).Include(s => s.Seller).ToList();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new Exception(ex.Message);
-            //}
-            //return productList;
         }
 
         public Product GetProductById(int id)
         {
             return GetAll().Include(c => c.Category)
                     .Include(m => m.Material)
-                    .Include(s => s.Seller).FirstOrDefault(p => p.Id == id);
+                    .Include(s => s.Seller).FirstOrDefault(p => p.Id == id && p.Status != 0);
         }
 
         public void CreateProduct(Product product)
@@ -70,9 +35,9 @@ namespace DataAccess.Implement
         {
             Update(product);
         }
-        public void DeleteProduct(int id)
+        public void DeleteProduct(Product product)
         {
-            throw new NotImplementedException();
+            Update(product);
         }
     }
 }
