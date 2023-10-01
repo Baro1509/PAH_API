@@ -36,7 +36,7 @@ namespace API.Controllers
             List<Product> productList = _productService.GetProductsBySellerId(id);
             if (productList == null)
             {
-                return Ok(new ErrorResponse { Code = 400, Message = "This seller is not exist" });
+                return NotFound(new ErrorResponse { Code = 400, Message = "This seller is not exist" });
             }
             List<ProductResponse> response = _mapper.Map<List<ProductResponse>>(productList);
             return Ok(new BaseResponse { Code = 200, Message = "Get products by seller successfully", Data = response });
@@ -48,7 +48,7 @@ namespace API.Controllers
             Product product = _productService.GetProductById(id);
             if(product == null)
             {
-                return Ok(new ErrorResponse { Code = 400, Message = "This product is not exist" });
+                return NotFound(new ErrorResponse { Code = 400, Message = "This product is not exist" });
             }
             ProductResponse response = _mapper.Map<ProductResponse>(product);
             return Ok(new BaseResponse { Code = 200, Message = "Get product successfully", Data = response });
@@ -67,7 +67,7 @@ namespace API.Controllers
             Product product = _productService.UpdateProduct(id, _mapper.Map<Product>(request));
             if (product == null)
             {
-                return Ok(new ErrorResponse { Code = 400, Message = "This product is not exist" });
+                return NotFound(new ErrorResponse { Code = 400, Message = "This product is not exist" });
             }
             return Ok(new BaseResponse { Code = 200, Message = "Edit product successfully", Data = null });
         }
@@ -78,7 +78,7 @@ namespace API.Controllers
             Product product = _productService.DeleteProduct(id);
             if (product == null)
             {
-                return Ok(new ErrorResponse { Code = 400, Message = "This product is not exist" });
+                return NotFound(new ErrorResponse { Code = 400, Message = "This product is not exist" });
             }
             return Ok(new BaseResponse { Code = 200, Message = "Edit product successfully", Data = null });
         }
