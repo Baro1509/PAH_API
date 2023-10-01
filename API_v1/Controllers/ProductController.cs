@@ -30,11 +30,10 @@ namespace API.Controllers
             return Ok(new BaseResponse { Code = 200, Message = "Get products successfully", Data = response });
         }
 
-        [HttpGet]
-        [Route("/seller")]
-        public IActionResult GetProductsBySellerId([FromQuery] int sellerId)
+        [HttpGet("seller/{id}")]
+        public IActionResult GetProductsBySellerId(int id)
         {
-            List<Product> productList = _productService.GetProductsBySellerId(sellerId);
+            List<Product> productList = _productService.GetProductsBySellerId(id);
             if (productList == null)
             {
                 return Ok(new ErrorResponse { Code = 400, Message = "This seller is not exist" });
@@ -44,7 +43,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetProductById([FromQuery] int id)
+        public IActionResult GetProductById(int id)
         {
             Product product = _productService.GetProductById(id);
             if(product == null)
@@ -62,8 +61,8 @@ namespace API.Controllers
             return Ok(new BaseResponse { Code = 200, Message = "Register product successfully", Data = null });
         }
 
-        [HttpPatch]
-        public IActionResult EditProduct([FromQuery] int id, [FromBody] ProductRequest request)
+        [HttpPatch("{id}")]
+        public IActionResult EditProduct(int id, [FromBody] ProductRequest request)
         {
             Product product = _productService.UpdateProduct(id, _mapper.Map<Product>(request));
             if (product == null)
@@ -73,8 +72,8 @@ namespace API.Controllers
             return Ok(new BaseResponse { Code = 200, Message = "Edit product successfully", Data = null });
         }
 
-        [HttpDelete]
-        public IActionResult DeleteProduct([FromQuery] int id)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProduct(int id)
         {
             Product product = _productService.DeleteProduct(id);
             if (product == null)
