@@ -11,6 +11,7 @@ namespace DataAccess
     {
         public Product GetProductById(int id);
         public IQueryable<Product> GetProducts();
+        public IQueryable<Product> GetProductsBySellerId(int sellerId);
         public void CreateProduct(Product product);
         public void UpdateProduct(Product product);
         public void DeleteProduct(Product product);

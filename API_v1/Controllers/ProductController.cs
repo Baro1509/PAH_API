@@ -30,8 +30,21 @@ namespace API.Controllers
             return Ok(new BaseResponse { Code = 200, Message = "Get products successfully", Data = response });
         }
 
+        [HttpGet]
+        [Route("/seller")]
+        public IActionResult GetProductsBySellerId([FromQuery] int sellerId)
+        {
+            List<Product> productList = _productService.GetProductsBySellerId(sellerId);
+            if (productList == null)
+            {
+                return Ok(new ErrorResponse { Code = 400, Message = "This seller is not exist" });
+            }
+            List<ProductResponse> response = _mapper.Map<List<ProductResponse>>(productList);
+            return Ok(new BaseResponse { Code = 200, Message = "Get products by seller successfully", Data = response });
+        }
+
         [HttpGet("{id}")]
-        public IActionResult GetProductById(int id)
+        public IActionResult GetProductById([FromQuery] int id)
         {
             Product product = _productService.GetProductById(id);
             if(product == null)

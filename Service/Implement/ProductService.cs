@@ -71,6 +71,15 @@ namespace Service.Implement
             return _productDAO.GetProductById(id);
         }
 
+        public List<Product> GetProductsBySellerId(int sellerId)
+        {
+            if (sellerId == null)
+            {
+                return null;
+            }
+            return _productDAO.GetProductsBySellerId(sellerId).ToList();
+        }
+
         public void CreateProduct(Product product)
         {
             product.Status = (int)Status.Available;

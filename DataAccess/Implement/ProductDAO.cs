@@ -26,6 +26,13 @@ namespace DataAccess.Implement
                     .Include(s => s.Seller).FirstOrDefault(p => p.Id == id && p.Status != 0);
         }
 
+        public IQueryable<Product> GetProductsBySellerId(int sellerId)
+        {
+            return GetAll().Include(c => c.Category)
+                    .Include(m => m.Material)
+                    .Include(s => s.Seller).Where(p => p.SellerId == sellerId);
+        }
+
         public void CreateProduct(Product product)
         {
             Create(product);
