@@ -3,6 +3,7 @@ using DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,11 +12,13 @@ namespace Service.Implement {
         private readonly IOrderDAO _orderDAO;
         private readonly IProductDAO _productDAO;
         private readonly IAddressDAO _addressDAO;
+        private readonly IProductImageDAO _productImageDAO;
 
-        public OrderService(IOrderDAO orderDAO, IProductDAO productDAO, IAddressDAO addressDAO) {
+        public OrderService(IOrderDAO orderDAO, IProductDAO productDAO, IAddressDAO addressDAO, IProductImageDAO productImageDAO) {
             _orderDAO = orderDAO;
             _productDAO = productDAO;
             _addressDAO = addressDAO;
+            _productImageDAO = productImageDAO;
         }
 
         public void ApproveCancelOrderRequest(int sellerId, int orderId) {
@@ -27,7 +30,7 @@ namespace Service.Implement {
         }
 
         public void Create(Order order) {
-            throw new NotImplementedException();
+            _orderDAO.Create(order);
         }
 
         public void Create(List<int> productId, int buyerId, int addressId) {
@@ -57,26 +60,40 @@ namespace Service.Implement {
                     order.OrderItems.Add(new OrderItem {
                         ProductId = p.Id,
                         Price = p.Price,
-
+                        Quantity = 1, //Update later base on business rule
+                        ImageUrl = _productImageDAO.GetByProductId(p.Id).FirstOrDefault().ImageUrl
                     });
+                    order.TotalAmount += p.Price;
                 });
+                _orderDAO.Create(order);
             }
         }
 
         public List<Order> GetAll() {
-            throw new NotImplementedException();
+            return _orderDAO.GetAllOrder().ToList();
         }
 
         public List<Order> GetByBuyerId(int buyerId) {
-            throw new NotImplementedException();
+            return _orderDAO.GetAllByBuyerId(buyerId).ToList();
         }
 
         public List<Order> GetBySellerId(int sellerId) {
-            throw new NotImplementedException();
+            return _orderDAO.GetAllBySellerId(sellerId).ToList();
         }
 
         public Order UpdateOrderStatus(int sellerId, int status, int orderId) {
-            throw new NotImplementedException();
+            var order = _orderDAO.Get(orderId);
+            if (order == null) {
+                throw new Exception("404: Order not found");
+            }
+
+            if (sellerId !=  order.SellerId) {
+                throw new Exception("401: You are not allowed to update this order");
+            }
+
+            order.Status = status;
+            _orderDAO.UpdateOrder(order);
+            return _orderDAO.Get(orderId);
         }
     }
 }
