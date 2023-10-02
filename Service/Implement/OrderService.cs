@@ -9,9 +9,13 @@ using System.Threading.Tasks;
 namespace Service.Implement {
     public class OrderService : IOrderService {
         private readonly IOrderDAO _orderDAO;
+        private readonly IProductDAO _productDAO;
+        private readonly IAddressDAO _addressDAO;
 
-        public OrderService(IOrderDAO orderDAO) {
+        public OrderService(IOrderDAO orderDAO, IProductDAO productDAO, IAddressDAO addressDAO) {
             _orderDAO = orderDAO;
+            _productDAO = productDAO;
+            _addressDAO = addressDAO;
         }
 
         public void ApproveCancelOrderRequest(int sellerId, int orderId) {
@@ -24,6 +28,39 @@ namespace Service.Implement {
 
         public void Create(Order order) {
             throw new NotImplementedException();
+        }
+
+        public void Create(List<int> productId, int buyerId, int addressId) {
+            List<Product> products = new List<Product>();
+            var address = _addressDAO.Get(addressId);
+            foreach (int id in productId) {
+                Product p = _productDAO.GetProductById(id);
+                if (p == null) {
+                    throw new Exception();
+                }
+                products.Add(p);
+            }
+            foreach (var productBySeller in products.GroupBy(p => p.SellerId)) {
+                Order order = new Order {
+                    BuyerId = buyerId,
+                    SellerId = productBySeller.FirstOrDefault().SellerId,
+                    RecipientName = address.RecipientName,
+                    RecipientPhone = address.RecipientPhone,
+                    RecipientAddress = address.Street + address.Ward + address.District + address.Province,
+                    OrderDate = DateTime.Now,
+                    Status = (int) OrderStatus.Pending,
+                    ShippingCost = 0, //Update function later
+                    TotalAmount = 0,
+                    OrderItems = new List<OrderItem>()
+                };
+                productBySeller.ToList().ForEach(p => {
+                    order.OrderItems.Add(new OrderItem {
+                        ProductId = p.Id,
+                        Price = p.Price,
+
+                    });
+                });
+            }
         }
 
         public List<Order> GetAll() {
