@@ -42,9 +42,5 @@ namespace DataAccess.Implement
         {
             Update(product);
         }
-        public void DeleteProduct(Product product)
-        {
-            Update(product);
-        }
     }
 }

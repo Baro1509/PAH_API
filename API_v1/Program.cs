@@ -31,6 +31,8 @@ builder.Services.AddScoped<IMaterialDAO, MaterialDAO>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IProductDAO, ProductDAO>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAuctionDAO, AuctionDAO>();
+builder.Services.AddScoped<IAuctionService, AuctionService>();
 
 builder.Services.AddAuthentication(x => {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
