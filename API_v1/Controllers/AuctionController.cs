@@ -1,10 +1,12 @@
-﻿using API.Response;
+﻿using API.Request;
+using API.Response;
 using API.Response.AuctionRes;
 using AutoMapper;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
+using Service.Implement;
 
 namespace API.Controllers
 {
@@ -50,6 +52,13 @@ namespace API.Controllers
             List<Auction> auctionList = _auctionService.GetAuctionAssigned(id);
             List<AuctionResponse> response = _mapper.Map<List<AuctionResponse>>(auctionList);
             return Ok(new BaseResponse { Code = 200, Message = "Get auctions successfully", Data = response });
+        }
+
+        [HttpPost]
+        public IActionResult CreateAuction([FromBody] AuctionRequest request)
+        {
+            _auctionService.CreateAuction(_mapper.Map<Auction>(request));
+            return Ok(new BaseResponse { Code = 200, Message = "Create auction successfully", Data = null });
         }
     }
 }

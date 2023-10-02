@@ -59,5 +59,10 @@ namespace DataAccess.Implement
         {
             throw new NotImplementedException();
         }
+
+        public void CreateAuction(Auction auction)
+        {
+            Create(auction);
+        }
     }
 }

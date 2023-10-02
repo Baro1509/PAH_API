@@ -14,5 +14,6 @@ namespace Service
         public List<Auction> GetAuctionAssigned(int staffId);
         public List<Auction> GetAuctionJoined(int bidderId);
         public List<Auction> GetAuctionBySellerId(int sellerId);
+        public void CreateAuction(Auction auction);
     }
 }

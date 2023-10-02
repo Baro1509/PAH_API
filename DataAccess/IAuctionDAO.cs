@@ -14,5 +14,6 @@ namespace DataAccess
         public IQueryable<Auction> GetAuctionAssigned(int staffId);
         public IQueryable<Auction> GetAuctionJoined(int bidderId);
         public IQueryable<Auction> GetAuctionBySellerId(int sellerId);
+        public void CreateAuction(Auction auction);
     }
 }
