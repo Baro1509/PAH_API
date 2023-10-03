@@ -96,15 +96,21 @@ namespace Service.Implement {
         }
 
         public List<Order> GetAll() {
-            return _orderDAO.GetAllOrder().ToList();
+            var a = _orderDAO.GetAllOrder().ToList();
+            a.ForEach(p => p.OrderItems.ToList().ForEach(p => { p.Product = _productDAO.GetProductById(p.ProductId); }));
+            return a;
         }
 
         public List<Order> GetByBuyerId(int buyerId) {
-            return _orderDAO.GetAllByBuyerId(buyerId).ToList();
+            var a = _orderDAO.GetAllByBuyerId(buyerId).ToList();
+            a.ForEach(p => p.OrderItems.ToList().ForEach(p => { p.Product = _productDAO.GetProductById(p.ProductId); }));
+            return a;
         }
 
         public List<Order> GetBySellerId(int sellerId) {
-            return _orderDAO.GetAllBySellerId(sellerId).ToList();
+            var a = _orderDAO.GetAllBySellerId(sellerId).ToList();
+            a.ForEach(p => p.OrderItems.ToList().ForEach(p => { p.Product = _productDAO.GetProductById(p.ProductId); }));
+            return a;
         }
 
 
