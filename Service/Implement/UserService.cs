@@ -39,10 +39,10 @@ namespace Service.Implement {
             if (user != null) {
                 var verifyPassword = BC.EnhancedVerify(password, user.Password);
                 if (!verifyPassword) return null;
-            }
-            var buyer = _buyerDAO.Get(user.Id);
-            if (buyer == null) {
-                _buyerDAO.Create(new Buyer { Id = user.Id, JoinedAt = DateTime.Now });
+                var buyer = _buyerDAO.Get(user.Id);
+                if (buyer == null) {
+                    _buyerDAO.Create(new Buyer { Id = user.Id, JoinedAt = DateTime.Now });
+                }
             }
             return user;
         }
