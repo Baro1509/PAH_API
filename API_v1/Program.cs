@@ -32,7 +32,9 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IProductDAO, ProductDAO>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductImageDAO, ProductImageDAO>();
+builder.Services.AddScoped<IOrderCancelDAO, OrderCancelDAO>();
 builder.Services.AddScoped<IAddressDAO, AddressDAO>();
+builder.Services.AddScoped<IBuyerDAO, BuyerDAO>();
 builder.Services.AddScoped<IOrderDAO, OrderDAO>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
