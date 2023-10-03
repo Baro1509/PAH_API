@@ -78,7 +78,7 @@ namespace API.Controllers {
         }
 
         [HttpPut("/api/seller/order/cancelrequest/{orderId:int}")]
-        public IActionResult ApproveCancelRequest(int orderId) {
+        public IActionResult ApproveCancelRequest(int orderId, [FromBody] bool confirm) {
             var id = GetUserIdFromToken();
             var user = _userService.Get(id);
 
@@ -89,9 +89,12 @@ namespace API.Controllers {
             if (user.Role != (int) Role.Seller) {
                 return Unauthorized(new ErrorDetails { StatusCode = (int) HttpStatusCode.Unauthorized, Message = "You are not allowed to access this" });
             }
-
-            _orderService.ApproveCancelOrderRequest(id, orderId);
-            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Approve cancel request successfully", Data = null });
+            if (confirm) {
+                _orderService.ApproveCancelOrderRequest(id, orderId);
+                return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Approve cancel request successfully", Data = null });
+            }
+            //implement deny flow
+            return BadRequest(new ErrorDetails { StatusCode = (int) HttpStatusCode.InternalServerError, Message = "Not implemented" });
         }
         
         [HttpPost("/api/buyer/order/cancelrequest/{orderId:int}")]
@@ -121,7 +124,7 @@ namespace API.Controllers {
             }
             
             if (user.Role != (int) Role.Seller) {
-                return Unauthorized(new ErrorDetails { StatusCode = (int) HttpStatusCode.Unauthorized, Message = "You are not allowed to access this" });
+                return Unauthorized(new ErrorDetails { StatusCode = (int) HttpStatusCode.Unauthorized, Message = "You are not seller, not allowed to access this" });
             }
             
             if (request.Status == (int)OrderStatus.CancelledBySeller) {
