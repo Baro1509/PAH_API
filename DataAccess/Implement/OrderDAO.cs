@@ -17,19 +17,19 @@ namespace DataAccess.Implement {
         }
 
         public Order Get(int id) {
-            return GetAll().Include(p => p.OrderItems).FirstOrDefault(p => p.Id == id && p.Status == (int) Status.Available);
+            return GetAll().Include(p => p.OrderItems).Include(p => p.Seller).FirstOrDefault(p => p.Id == id && p.Status != (int) Status.Unavailable);
         }
 
         public IQueryable<Order> GetAllByBuyerId(int id) {
-            return GetAll().Include(p => p.OrderItems).Where(p => p.BuyerId == id && p.Status == (int) Status.Available);
+            return GetAll().Include(p => p.OrderItems).Include(p => p.Seller).Where(p => p.BuyerId == id && p.Status != (int) Status.Unavailable);
         }
 
         public IQueryable<Order> GetAllBySellerId(int id) {
-            return GetAll().Include(p => p.OrderItems).Where(p => p.SellerId == id && p.Status == (int) Status.Available);
+            return GetAll().Include(p => p.OrderItems).Include(p => p.Seller).Where(p => p.SellerId == id && p.Status != (int) Status.Unavailable);
         }
 
         public IQueryable<Order> GetAllOrder() {
-            return GetAll().Include(p => p.OrderItems).Where(p => p.Status == (int) Status.Available);
+            return GetAll().Include(p => p.OrderItems).Include(p => p.Seller).Where(p => p.Status != (int) Status.Unavailable);
         }
     }
 }
