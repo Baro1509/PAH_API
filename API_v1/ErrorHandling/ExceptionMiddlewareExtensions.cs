@@ -14,10 +14,16 @@ namespace API.ErrorHandling {
                     if (contextFeature != null) {
                         var a = int.Parse(contextFeature.Error.Message.Substring(0, 3));
                         context.Response.StatusCode = a;
+                        string message;
+                        if (a >= 500) {
+                            message = "Internal server error";
+                        } else {
+                            message = $"{contextFeature.Error.Message.Substring(5)}";
+                        }
                         logger.LogError($"Something went wrong: {contextFeature.Error}");
                         await context.Response.WriteAsync(new ErrorDetails() {
                             StatusCode = context.Response.StatusCode,
-                            Message = $"{contextFeature.Error.Message.Substring(5)}"
+                            Message = message
                         }.ToString());
                     }
                 });
