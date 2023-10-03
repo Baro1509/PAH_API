@@ -13,20 +13,46 @@ namespace Service.Implement {
         private readonly IProductDAO _productDAO;
         private readonly IAddressDAO _addressDAO;
         private readonly IProductImageDAO _productImageDAO;
+        private readonly IOrderCancelDAO _orderCancelDAO;
 
-        public OrderService(IOrderDAO orderDAO, IProductDAO productDAO, IAddressDAO addressDAO, IProductImageDAO productImageDAO) {
+        public OrderService(IOrderDAO orderDAO, IProductDAO productDAO, IAddressDAO addressDAO, IProductImageDAO productImageDAO, IOrderCancelDAO orderCancelDAO) {
             _orderDAO = orderDAO;
             _productDAO = productDAO;
             _addressDAO = addressDAO;
             _productImageDAO = productImageDAO;
+            _orderCancelDAO = orderCancelDAO;
+        }
+
+        public void SellerCancelOrder(int sellerId, int orderId, string reason) {
+            var order = _orderDAO.Get(orderId);
+
+            if (order == null) throw new Exception("404: Order not found");
+            if (sellerId != order.SellerId || order.Status != (int) OrderStatus.Pending) throw new Exception("401: You are not allowed to cancel this order");
+
+            order.Status = (int) OrderStatus.CancelledBySeller;
+            _orderDAO.UpdateOrder(order);
+            _orderCancelDAO.Create(new OrderCancellation { Id = order.Id, Reason = reason });
         }
 
         public void ApproveCancelOrderRequest(int sellerId, int orderId) {
-            throw new NotImplementedException();
+            var order = _orderDAO.Get(orderId);
+
+            if (order == null) throw new Exception("404: Order not found");
+            if (sellerId != order.SellerId || order.Status != (int) OrderStatus.CancelApprovalPending) throw new Exception("401: You are not allowed to approve cancel this order");
+
+            order.Status = (int) OrderStatus.CancelledByBuyer;
+            _orderDAO.UpdateOrder(order);
+            _orderCancelDAO.Create(new OrderCancellation { Id = order.Id, Reason = "Buyer cancelled" });
         }
 
         public void CancelOrderRequest(int buyerId, int orderId) {
-            throw new NotImplementedException();
+            var order = _orderDAO.Get(orderId);
+
+            if (order == null) throw new Exception("404: Order not found");
+            if (buyerId != order.BuyerId || order.Status != (int) OrderStatus.Pending) throw new Exception("401: You are not allowed to cancel this order");
+
+            order.Status = (int) OrderStatus.CancelApprovalPending;
+            _orderDAO.UpdateOrder(order);
         }
 
         public void Create(Order order) {
@@ -81,13 +107,17 @@ namespace Service.Implement {
             return _orderDAO.GetAllBySellerId(sellerId).ToList();
         }
 
+
         public Order UpdateOrderStatus(int sellerId, int status, int orderId) {
             var order = _orderDAO.Get(orderId);
             if (order == null) {
                 throw new Exception("404: Order not found");
             }
 
-            if (sellerId !=  order.SellerId) {
+            if (sellerId !=  order.SellerId 
+                || order.Status == (int)OrderStatus.CancelledByBuyer 
+                || order.Status == (int) OrderStatus.CancelledBySeller 
+                || order.Status == (int) OrderStatus.CancelApprovalPending) {
                 throw new Exception("401: You are not allowed to update this order");
             }
 

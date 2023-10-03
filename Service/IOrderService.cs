@@ -12,6 +12,7 @@ namespace Service {
         public Order UpdateOrderStatus(int sellerId, int status, int orderId);
         public void CancelOrderRequest(int buyerId, int orderId);
         public void ApproveCancelOrderRequest(int sellerId, int orderId);
+        public void SellerCancelOrder(int sellerId, int orderId, string reason);
 
         public List<Order> GetByBuyerId(int buyerId);
         public List<Order> GetBySellerId(int sellerId);
