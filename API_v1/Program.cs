@@ -58,6 +58,9 @@ builder.Services.AddAuthentication(x => {
     };
 });
 
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddHostedService<API.Tunnel.TunnelService>();
+
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
