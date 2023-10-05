@@ -3,6 +3,7 @@ using DataAccess;
 using DataAccess.Implement;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Service;
@@ -23,6 +24,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<ValidateModelAttribute>();
+builder.Services.Configure<ApiBehaviorOptions>(options => {
+    options.SuppressModelStateInvalidFilter = true;
+});
+
 builder.Services.AddScoped<IUserDAO, UserDAO>();
 builder.Services.AddScoped<ITokenDAO, TokenDAO>();
 builder.Services.AddScoped<IUserService, UserService>();
