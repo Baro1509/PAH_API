@@ -1,6 +1,9 @@
 ﻿using API.ErrorHandling;
 using API.Request;
 using API.Response;
+using API.Response.AddressRes;
+using AutoMapper;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +16,11 @@ namespace API.Controllers {
     [Authorize]
     public class AddressController : ControllerBase {
         private readonly IAddressService _addressService;
+        private readonly IMapper _mapper;
 
-        public AddressController(IAddressService addressService) {
+        public AddressController(IAddressService addressService, IMapper mapper) {
             _addressService = addressService;
+            _mapper = mapper;
         }
 
         private int GetUserIdFromToken() {
@@ -26,17 +31,48 @@ namespace API.Controllers {
         [HttpGet]
         public IActionResult GetByCustomerId() {
             var id = GetUserIdFromToken();
-            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get address by customer successfully", Data = _addressService.GetByCustomerId(id) });
+            return Ok(new BaseResponse { 
+                Code = (int) HttpStatusCode.OK, 
+                Message = "Get address by customer successfully", 
+                Data = _addressService.GetByCustomerId(id).Select(p => _mapper.Map<AddressResponse>(p)) 
+            });
         }
         
         [HttpPost]
-        [AllowAnonymous]
+        [ServiceFilter(typeof(ValidateModelAttribute))]
         public IActionResult Create([FromBody] AddressRequest request) {
-            if (!ModelState.IsValid) {
-                return Ok(new ErrorDetails { StatusCode = (int) HttpStatusCode.OK, Message = ModelState.ToString()});
-            }
             var id = GetUserIdFromToken();
-            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get address by customer successfully", Data = _addressService.GetByCustomerId(id) });
+            var address = _mapper.Map<Address>(request);
+            address.CustomerId = id;
+            _addressService.Create(address);
+            return Ok(new BaseResponse { 
+                Code = (int) HttpStatusCode.OK, 
+                Message = "Create address successfully", 
+                Data = null 
+            });
+        }
+        
+        [HttpPut]
+        [ServiceFilter(typeof(ValidateModelAttribute))]
+        public IActionResult Update([FromBody] AddressRequest request) {
+            var id = GetUserIdFromToken();
+            _addressService.Update(_mapper.Map<Address>(request), id);
+            return Ok(new BaseResponse { 
+                Code = (int) HttpStatusCode.OK, 
+                Message = "Update address successfully", 
+                Data = null 
+            });
+        }
+        
+        [HttpDelete("{addressId:int}")]
+        public IActionResult Delete(int addressId) {
+            var id = GetUserIdFromToken();
+            _addressService.Delete(addressId, id);
+            return Ok(new BaseResponse { 
+                Code = (int) HttpStatusCode.OK, 
+                Message = "Delete address successfully", 
+                Data = null 
+            });
         }
     }
 }
