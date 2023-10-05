@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using DataAccess;
 using DataAccess.Models;
+using System.Net;
 
 namespace Service.Implement {
     public class AddressService : IAddressService {
@@ -16,11 +17,29 @@ namespace Service.Implement {
         }
 
         public void Create(Address address) {
+            address.Id = 0;
+            address.IsDefault = false;
             _addressDAO.Create(address);
         }
 
-        public void Delete(int addressId) {
-            
+        public void Delete(int addressId, int customerId) {
+            var db = _addressDAO.Get(addressId);
+
+            if (db == null) {
+                throw new Exception("404: Address not found");
+            }
+
+            if (db.CustomerId != customerId) {
+                throw new Exception("401: You are not allowed to delete this address");
+            }
+
+            if (db.Type == (int) AddressType.Pickup) {
+                var listAddress = _addressDAO.GetByCustomerId(db.CustomerId.Value).Select(p => p.Type == (int) AddressType.Pickup);
+                if (listAddress.Count() <= 1) { 
+                    throw new Exception("400: You are not allowed to delete address: You do not have sufficient address"); 
+                }
+            }
+            _addressDAO.Delete(db);
         }
 
         public Address Get(int addressId) {
@@ -31,11 +50,15 @@ namespace Service.Implement {
             return _addressDAO.GetByCustomerId(customerId).ToList();
         }
 
-        public void Update(Address address) {
+        public void Update(Address address, int customerId) {
             var db = _addressDAO.Get(address.Id);
 
             if (db == null) {
                 throw new Exception("404: Address not found");
+            }
+
+            if (db.CustomerId != customerId) {
+                throw new Exception("401: You are not allowed to update this address");
             }
 
             db.RecipientName = address.RecipientName;

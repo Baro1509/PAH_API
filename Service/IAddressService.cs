@@ -10,7 +10,7 @@ namespace Service {
         public List<Address> GetByCustomerId(int customerId);
         public Address Get(int addressId);
         public void Create(Address address);
-        public void Update(Address address);
-        public void Delete(int addressId);
+        public void Update(Address address, int customerId);
+        public void Delete(int addressId, int customerId);
     }
 }
