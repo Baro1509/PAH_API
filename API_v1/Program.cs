@@ -2,6 +2,7 @@ using API.ErrorHandling;
 using DataAccess;
 using DataAccess.Implement;
 using DataAccess.Models;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,11 +26,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+//Filter
 builder.Services.AddScoped<ValidateModelAttribute>();
 builder.Services.Configure<ApiBehaviorOptions>(options => {
     options.SuppressModelStateInvalidFilter = true;
 });
 
+//DI for scoped services
 builder.Services.AddScoped<IUserDAO, UserDAO>();
 builder.Services.AddScoped<ITokenDAO, TokenDAO>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -54,7 +57,9 @@ builder.Services.AddScoped<IAuctionDAO, AuctionDAO>();
 builder.Services.AddScoped<IAuctionService, AuctionService>();
 builder.Services.AddScoped<IBidDAO, BidDAO>();
 builder.Services.AddScoped<IBidService, BidService>();
+builder.Services.AddScoped<IJobTestService, JobTestService>();
 
+//JWT authentication
 builder.Services.AddAuthentication(x => {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -79,6 +84,12 @@ builder.Services.AddAuthentication(x => {
     };
 });
 
+//Hangfire Task scheduler
+builder.Services.AddHangfire(x => {
+    x.UseSqlServerStorage(builder.Configuration["ConnectionStrings:dev"]);
+});
+builder.Services.AddHangfireServer();
+
 if (builder.Environment.IsDevelopment())
     builder.Services.AddHostedService<API.Tunnel.TunnelService>();
 
@@ -95,9 +106,11 @@ app.ConfigureExceptionHandler(logger);
 
 app.UseHttpsRedirection();
 
-
 app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseHangfireDashboard();
 
 app.MapControllers();
 
