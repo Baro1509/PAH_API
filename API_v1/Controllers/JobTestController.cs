@@ -25,7 +25,8 @@ namespace API.Controllers {
 
         [HttpGet("/DelayedJob")]
         public IActionResult CreateDelayedJob() {
-            _backgroundJobClient.Schedule(() => _jobTestService.DelayedJob(), TimeSpan.FromSeconds(60));
+            //_backgroundJobClient.Schedule(() => _jobTestService.DelayedJob(), TimeSpan.FromSeconds(60));
+            _backgroundJobClient.Schedule(() => _jobTestService.DelayedJob(), DateTime.Now.AddMinutes(1));
             return Ok();
         }
 
