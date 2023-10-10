@@ -48,8 +48,8 @@ namespace API.Controllers {
 
             var orders = _orderService.GetByBuyerId(id)
                 .Skip((pagingParam.PageNumber - 1) * pagingParam.PageSize).Take(pagingParam.PageSize).ToList();
-            orders.Select(p => _mapper.Map<OrderResponse>(p));
-            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get Buyer's order list successfully", Data = orders});
+            var responseOrders = orders.Select(p => _mapper.Map<OrderResponse>(p));
+            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get Buyer's order list successfully", Data = responseOrders});
         }
         
         [HttpGet("/api/seller/order")]
@@ -63,8 +63,8 @@ namespace API.Controllers {
 
             var orders = _orderService.GetBySellerId(id)
                 .Skip((pagingParam.PageNumber - 1) * pagingParam.PageSize).Take(pagingParam.PageSize).ToList();
-            orders.Select(p => _mapper.Map<OrderResponse>(p));
-            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get Seller's order list successfully", Data = orders});
+            var responseOrders = orders.Select(p => _mapper.Map<OrderResponse>(p));
+            return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Get Seller's order list successfully", Data = responseOrders});
         }
 
         [HttpPost("/api/buyer/checkout")]
