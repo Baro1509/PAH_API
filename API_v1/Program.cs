@@ -20,6 +20,9 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient("GHN", httpClient => {
     httpClient.BaseAddress = new Uri(builder.Configuration["API3rdParty:GHN:dev"]);
 });
+builder.Services.AddHttpClient("Zalopay", httpClient => {
+    httpClient.BaseAddress = new Uri(builder.Configuration["API3rdParty:Zalopay:dev"]);
+});
 builder.Services.AddDbContext<PlatformAntiquesHandicraftsContext>(options => options.UseSqlServer("name=ConnectionStrings:dev"));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -87,6 +90,7 @@ builder.Services.AddScoped<ISellerDAO, SellerDAO>();
 builder.Services.AddScoped<ISellerService, SellerService>();
 builder.Services.AddScoped<IFeedbackDAO, FeedbackDAO>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IWalletDAO, WalletDAO>();
 builder.Services.AddScoped<ITransactionDAO, TransactionDAO>();
 
