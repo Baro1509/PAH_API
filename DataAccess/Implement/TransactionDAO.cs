@@ -13,5 +13,10 @@ namespace DataAccess.Implement {
         public IQueryable<Transaction> GetByUserId(int userId) {
             return GetAll().Where(p => p.Id == userId);
         }
+
+        public bool IsZalopayOrderValid(string appTransId, string mac) {
+            var list = GetAll().Where(p => p.Description.Contains(appTransId) || p.Description.Contains(mac));
+            return list.Count() == 0;
+        }
     }
 }

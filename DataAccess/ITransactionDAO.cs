@@ -9,5 +9,6 @@ namespace DataAccess {
     public interface ITransactionDAO {
         public void Create(Transaction transaction);
         public IQueryable<Transaction> GetByUserId(int userId);
+        public bool IsZalopayOrderValid(string appTransId, string mac);
     }
 }
