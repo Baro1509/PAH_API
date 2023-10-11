@@ -7,6 +7,7 @@ using AutoMapper.Configuration.Conventions;
 using DataAccess;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
@@ -16,6 +17,7 @@ namespace API.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableCors]
     public class OrderController : ControllerBase {
         private readonly IOrderService _orderService;
         private readonly IUserService _userService;

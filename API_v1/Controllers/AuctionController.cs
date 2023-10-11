@@ -7,6 +7,7 @@ using API.Response.SellerRes;
 using AutoMapper;
 using DataAccess;
 using DataAccess.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
@@ -17,6 +18,7 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors]
     public class AuctionController : ControllerBase
     {
         private readonly IAuctionService _auctionService;

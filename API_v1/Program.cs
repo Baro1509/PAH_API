@@ -119,6 +119,16 @@ builder.Services.AddAuthentication(x => {
     };
 });
 
+//CORS policy
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(
+        builder => {
+            builder.WithOrigins("http://localhost:3000")
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+        });
+});
+
 //Hangfire Task scheduler
 builder.Services.AddHangfire(x => {
     x.UseSqlServerStorage(builder.Configuration["ConnectionStrings:dev"]);
@@ -140,6 +150,8 @@ if (app.Environment.IsDevelopment()) {
 app.ConfigureExceptionHandler(logger);
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthentication();
 
