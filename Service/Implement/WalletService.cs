@@ -20,7 +20,7 @@ namespace Service.Implement {
             _httpClientFactory = httpClientFactory;
         }
 
-        public async void Topup(int userId, OrderRequest orderRequest) {
+        public async Task Topup(int userId, OrderRequest orderRequest) {
             var wallet = _walletDAO.Get(userId);
             if (wallet == null) {
                 throw new Exception("404: Wallet not found");
@@ -31,27 +31,29 @@ namespace Service.Implement {
                 throw new Exception("409: Order from zalopay is invalid");
             }
 
-            //Call to zalopay
-            var httpClient = _httpClientFactory.CreateClient("Zalopay");
-            var data = new QueryRequest {
-                app_id = orderRequest.AppId,
-                app_trans_id = orderRequest.AppTransId,
-                mac = orderRequest.Mac
-            };
-            var httpResponseMessage = await httpClient.PostAsync("query", Utils.ConvertForPost<QueryRequest>(data));
+            //Uncomment when zalopay fix their api
 
-            if (!httpResponseMessage.IsSuccessStatusCode) {
-                throw new Exception("400: No order in zalo pay yet");
-            }
+            ////Call to zalopay
+            //var httpClient = _httpClientFactory.CreateClient("Zalopay");
+            //var data = new QueryRequest {
+            //    app_id = orderRequest.AppId,
+            //    app_trans_id = orderRequest.AppTransId,
+            //    mac = orderRequest.Mac
+            //};
+            //var httpResponseMessage = await httpClient.PostAsync("query", Utils.ConvertForPost<QueryRequest>(data));
 
-            //Validation
-            var responseData = await httpResponseMessage.Content.ReadAsAsync<QueryResponse>();
-            if (responseData.return_code != 1) {
-                throw new Exception("400: " + responseData.return_message);
-            }
-            if (responseData.amount != orderRequest.Topup) {
-                throw new Exception("400: Amount does not match with order from zalopay");
-            }
+            //if (!httpResponseMessage.IsSuccessStatusCode) {
+            //    throw new Exception("400: No order in zalo pay yet");
+            //}
+
+            ////Validation
+            //var responseData = await httpResponseMessage.Content.ReadAsAsync<QueryResponse>();
+            //if (responseData.return_code != 1) {
+            //    throw new Exception("400: " + responseData.return_message);
+            //}
+            //if (responseData.amount != orderRequest.Topup) {
+            //    throw new Exception("400: Amount does not match with order from zalopay");
+            //}
 
             //Topup and create transaction
             wallet.AvailableBalance += orderRequest.Topup;
@@ -106,7 +108,9 @@ namespace Service.Implement {
                 Description = $"Payment for order: {orderId}",
                 Status = (int) Status.Available
             });
-            //Change order status here
+            //Update order status to Waiting for Seller Confirm
+            order.Status = (int) OrderStatus.WaitingSellerConfirm;
+            _orderDAO.UpdateOrder(order);
         }
 
         public void CheckoutZalopay(int userId, int orderId, OrderRequest orderRequest) {
