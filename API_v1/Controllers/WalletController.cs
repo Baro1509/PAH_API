@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
-using Service.Implement;
+using Service.CustomRequest;
 using Service.ThirdParty.Zalopay;
 using System.Net;
 
-namespace API.Controllers {
+namespace API.Controllers
+{
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors]
@@ -27,7 +28,7 @@ namespace API.Controllers {
         }
 
         [HttpPost("topup")]
-        public async Task<IActionResult> Topup([FromBody] OrderRequest request) {
+        public async Task<IActionResult> Topup([FromBody] TopupRequest request) {
             var userId = GetUserIdFromToken();
             if (userId == null) {
                 return Unauthorized(new ErrorDetails { 

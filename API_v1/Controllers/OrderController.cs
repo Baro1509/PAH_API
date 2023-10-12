@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
+using Service.CustomRequest;
 using System.Net;
 
-namespace API.Controllers {
+namespace API.Controllers
+{
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -70,14 +72,25 @@ namespace API.Controllers {
         }
 
         [HttpPost("/api/buyer/checkout")]
+        [ServiceFilter(typeof(ValidateModelAttribute))]
         public IActionResult Checkout([FromBody] CheckoutRequest request) {
             var id = GetUserIdFromToken();
             var user = _userService.Get(id);
 
             if (user == null) {
-                return Unauthorized(new ErrorDetails { StatusCode = (int) HttpStatusCode.Unauthorized, Message = "You are not allowed to access this" });
+                return Unauthorized(new ErrorDetails { 
+                    StatusCode = (int) HttpStatusCode.Unauthorized, 
+                    Message = "You are not allowed to access this" 
+                });
             }
-            _orderService.Create(request.ProductIds, user.Id, request.AddressId);
+            
+            if (user.Role != (int) Role.Buyer) {
+                return Unauthorized(new ErrorDetails { 
+                    StatusCode = (int) HttpStatusCode.Unauthorized, 
+                    Message = "You are not allowed to access this" 
+                });
+            }
+            _orderService.Checkout(request, user.Id, request.AddressId);
             return Ok(new BaseResponse { Code = (int) HttpStatusCode.OK, Message = "Checkout successfully", Data = null });
         }
 
