@@ -2,6 +2,7 @@
 using Service.CustomRequest;
 using Service.ThirdParty;
 using Service.ThirdParty.Zalopay;
+using DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace Service.Implement
 {
-    public class WalletService : IWalletService {
+    public class WalletService : IWalletService
+    {
         private readonly IWalletDAO _walletDAO;
         private readonly ITransactionDAO _transactionDAO;
         private readonly IOrderDAO _orderDAO;
@@ -31,7 +33,7 @@ namespace Service.Implement
             //Check transaction from zalopay in committed in db
             if (!_transactionDAO.IsZalopayOrderValid(topupRequest.AppTransId, topupRequest.Mac)) {
                 throw new Exception("409: Order from zalopay is invalid");
-            }
+        }
 
             //Uncomment when zalopay fix their api
 
@@ -113,6 +115,11 @@ namespace Service.Implement
             //Update order status to Waiting for Seller Confirm
             order.Status = (int) OrderStatus.WaitingSellerConfirm;
             _orderDAO.UpdateOrder(order);
+        }
+
+        public Wallet GetByCurrentUser(int id)
+        {
+            return _walletDAO.GetByCurrentUser(id);
         }
 
         //public void CheckoutZalopay(int userId, int orderId, OrderRequest orderRequest) {

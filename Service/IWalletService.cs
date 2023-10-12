@@ -1,4 +1,5 @@
-﻿using Service.ThirdParty.Zalopay;
+﻿using DataAccess.Models;
+using Service.ThirdParty.Zalopay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Service
     public interface IWalletService {
         public Task Topup(int userId, TopupRequest orderRequest);
         public void CheckoutWallet(int userId, int orderId);
+        public Wallet GetByCurrentUser(int id);
         //public void CheckoutZalopay(int userId, int orderId, TopupRequest orderRequest);
         public void AddLockedBalance(int userId, decimal balance);
         public void SubtractLockedBalance(int userId, decimal balance);

@@ -17,5 +17,10 @@ namespace DataAccess.Implement {
         public Wallet GetWithoutStatus(int userId) {
             return GetAll().FirstOrDefault(p => p.Id == userId);
         }
+
+        public Wallet GetByCurrentUser(int id)
+        {
+            return GetAll().Where(w => w.Id == id && w.Status == (int)Status.Available).FirstOrDefault();
+        }
     }
 }

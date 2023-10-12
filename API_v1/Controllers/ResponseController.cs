@@ -39,7 +39,12 @@ namespace API.Controllers
         public IActionResult Get(int feedbackId)
         {
             DataAccess.Models.Response response = _responseService.GetByFeedbackId(feedbackId);
-            return Ok(new BaseResponse { Code = (int)HttpStatusCode.OK, Message = "Get response successfully", Data = response });
+            return Ok(new BaseResponse 
+            {
+                Code = (int)HttpStatusCode.OK, 
+                Message = "Get response successfully",
+                Data = response 
+            });
         }
 
         [HttpPost]
@@ -49,14 +54,23 @@ namespace API.Controllers
             var user = _userService.Get(userId);
             if (user == null || user.Role != (int)Role.Seller)
             {
-                return Unauthorized(new ErrorDetails { StatusCode = (int)HttpStatusCode.Unauthorized, Message = "You are not allowed to access this" });
+                return Unauthorized(new ErrorDetails
+                {
+                    StatusCode = (int)HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
             }
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             _responseService.Reply(_mapper.Map<DataAccess.Models.Response>(request));
-            return Ok(new BaseResponse { Code = (int)HttpStatusCode.OK, Message = "Response successfully", Data = null });
+            return Ok(new BaseResponse
+            { 
+                Code = (int)HttpStatusCode.OK,
+                Message = "Response successfully", 
+                Data = null 
+            });
         }
     }
 }

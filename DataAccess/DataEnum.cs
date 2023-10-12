@@ -72,7 +72,7 @@ namespace DataAccess {
     public enum BidStatus
     {
         Active = 1,
-        Retracted = 0,
+        Retracted = 2,
     }
 
     public enum PaymentType {
