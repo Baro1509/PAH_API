@@ -1,4 +1,5 @@
 ﻿using DataAccess;
+using Service.CustomRequest;
 using Service.ThirdParty;
 using Service.ThirdParty.Zalopay;
 using System;
@@ -7,7 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Service.Implement {
+namespace Service.Implement
+{
     public class WalletService : IWalletService {
         private readonly IWalletDAO _walletDAO;
         private readonly ITransactionDAO _transactionDAO;
@@ -20,14 +22,14 @@ namespace Service.Implement {
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task Topup(int userId, OrderRequest orderRequest) {
+        public async Task Topup(int userId, TopupRequest topupRequest) {
             var wallet = _walletDAO.Get(userId);
             if (wallet == null) {
                 throw new Exception("404: Wallet not found");
             }
 
             //Check transaction from zalopay in committed in db
-            if (!_transactionDAO.IsZalopayOrderValid(orderRequest.AppTransId, orderRequest.Mac)) {
+            if (!_transactionDAO.IsZalopayOrderValid(topupRequest.AppTransId, topupRequest.Mac)) {
                 throw new Exception("409: Order from zalopay is invalid");
             }
 
@@ -56,18 +58,18 @@ namespace Service.Implement {
             //}
 
             //Topup and create transaction
-            wallet.AvailableBalance += orderRequest.Topup;
+            wallet.AvailableBalance += topupRequest.Topup;
             _walletDAO.Update(wallet);
             _transactionDAO.Create(new DataAccess.Models.Transaction {
                 Id = 0,
                 WalletId = wallet.Id,
                 PaymentMethod = (int) PaymentType.Zalopay,
-                Amount = orderRequest.Topup,
+                Amount = topupRequest.Topup,
                 Type = (int) TransactionType.Deposit,
                 Date = DateTime.Now,
-                Description = $"app_id: {orderRequest.AppId}, " +
-                    $"app_trans_id: {orderRequest.AppTransId}, " +
-                    $"mac: {orderRequest.Mac}",
+                Description = $"app_id: {topupRequest.AppId}, " +
+                    $"app_trans_id: {topupRequest.AppTransId}, " +
+                    $"mac: {topupRequest.Mac}",
                 Status = (int) Status.Available
             });
         }
@@ -113,8 +115,8 @@ namespace Service.Implement {
             _orderDAO.UpdateOrder(order);
         }
 
-        public void CheckoutZalopay(int userId, int orderId, OrderRequest orderRequest) {
-            throw new NotImplementedException();
-        }
+        //public void CheckoutZalopay(int userId, int orderId, OrderRequest orderRequest) {
+        //    throw new NotImplementedException();
+        //}
     }
 }
