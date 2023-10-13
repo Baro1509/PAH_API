@@ -99,7 +99,7 @@ namespace Service.Implement {
                         Quantity = product.Amount,
                         ImageUrl = _productImageDAO.GetByProductId(dbProduct.Id).FirstOrDefault().ImageUrl
                     });
-                    insert.TotalAmount += dbProduct.Price * product.Amount;
+                    //insert.TotalAmount += dbProduct.Price * product.Amount;
                 }
                 _orderDAO.Create(insert);
             }
