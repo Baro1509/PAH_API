@@ -206,7 +206,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPatch("{id}")]
+        [HttpPut("{id}")]
         public IActionResult EditProduct(int id, [FromBody] ProductRequest request)
         {
             var userId = GetUserIdFromToken();
