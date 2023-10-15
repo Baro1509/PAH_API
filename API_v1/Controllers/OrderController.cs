@@ -1,7 +1,4 @@
 ﻿using API.ErrorHandling;
-using API.Request;
-using API.Response;
-using API.Response.OrderRes;
 using AutoMapper;
 using AutoMapper.Configuration.Conventions;
 using DataAccess;
@@ -10,8 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Request;
+using Request.Param;
+using Respon;
+using Respon.OrderRes;
 using Service;
-using Service.CustomRequest;
 using System.Net;
 
 namespace API.Controllers
