@@ -91,13 +91,8 @@ namespace API.Controllers {
 
         [HttpPost("/api/forgotpassword")]
         [AllowAnonymous]
+        [ServiceFilter(typeof(ValidateModelAttribute))]
         public async Task<IActionResult> SendEmailResetPasswordAsync([FromBody] ForgotPasswordRequest request) {
-            if (!ModelState.IsValid)
-                return BadRequest(new ErrorDetails {
-                    StatusCode = (int) HttpStatusCode.BadRequest,
-                    Message = "Request not in format"
-                });
-
             var user = _userService.GetByEmail(request.Email);
             if (user == null) {
                 return NotFound(new ErrorDetails {
@@ -119,6 +114,7 @@ namespace API.Controllers {
         }
 
         [HttpPost("/api/resetpassword")]
+        [ServiceFilter(typeof(ValidateModelAttribute))]
         [AllowAnonymous]
         public IActionResult ResetPassword([FromBody] ResetPasswordRequest request) {
             _userService.ResetPassword(request);
