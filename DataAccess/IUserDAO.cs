@@ -12,5 +12,6 @@ namespace DataAccess {
         public IQueryable<User> GetAll();
         public void Deactivate(User user);
         public void Register(User user);
+        public void Update(User user);
     }
 }
