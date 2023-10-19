@@ -7,5 +7,24 @@ namespace API.Controllers {
     [ApiController]
     [Authorize]
     public class AdminController : ControllerBase {
+        [HttpPost("staff")]
+        public IActionResult AddStaff() {
+            return Ok();
+        }
+        
+        [HttpPatch("staff")]
+        public IActionResult EditStaff() {
+            return Ok();
+        }
+
+        [HttpGet("account")]
+        public IActionResult ViewAllAccount() {
+            return Ok();
+        }
+        
+        [HttpPatch("account")]
+        public IActionResult EditStatusAccount() {
+            return Ok();
+        }
     }
 }
