@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace Service.EmailService {
     public interface IEmailService {
-        public void SendEmail(Message message);
+        public Task SendEmail(Message message);
     }
 }

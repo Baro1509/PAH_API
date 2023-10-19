@@ -13,7 +13,7 @@ namespace Service.EmailService {
             _emailConfig = emailConfig;
         }
 
-        public void SendEmail(Message message) {
+        public async Task SendEmail(Message message) {
             var emailMessage = CreateEmailMessage(message);
             Send(emailMessage);
         }
