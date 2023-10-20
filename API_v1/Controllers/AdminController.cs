@@ -1,11 +1,14 @@
 ﻿using API.ErrorHandling;
 using AutoMapper;
+using DataAccess;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Request;
+using Request.Param;
 using Respon;
+using Respon.UserRes;
 using Service;
 using System.Net;
 
@@ -16,15 +19,36 @@ namespace API.Controllers {
     public class AdminController : ControllerBase {
         private readonly IMapper _mapper;
         private readonly IAdminService _adminService;
+        private readonly IUserService _userService;
 
-        public AdminController(IMapper mapper, IAdminService adminService) {
+        public AdminController(IMapper mapper, IAdminService adminService, IUserService userService) {
             _mapper = mapper;
             _adminService = adminService;
+            _userService = userService;
+        }
+
+        private int GetUserIdFromToken() {
+            var user = HttpContext.User;
+            return int.Parse(user.Claims.FirstOrDefault(p => p.Type == "UserId").Value);
         }
 
         [HttpPost("staff")]
         [ServiceFilter(typeof(ValidateModelAttribute))]
         public IActionResult AddStaff([FromBody] StaffRequest request) {
+            var id = GetUserIdFromToken();
+            var user = _userService.Get(id);
+            if (user == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int)HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            if (user.Role != (int) Role.Administrator) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
             _adminService.CreateStaff(_mapper.Map<User>(request));
             return Ok(new BaseResponse {
                 Code = (int) HttpStatusCode.OK,
@@ -36,6 +60,20 @@ namespace API.Controllers {
         [HttpPatch("staff")]
         [ServiceFilter(typeof(ValidateModelAttribute))]
         public IActionResult EditStaff([FromBody] StaffRequest request) {
+            var id = GetUserIdFromToken();
+            var user = _userService.Get(id);
+            if (user == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            if (user.Role != (int) Role.Administrator) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
             _adminService.UpdateStaff(_mapper.Map<User>(request));
             return Ok(new BaseResponse {
                 Code = (int) HttpStatusCode.OK,
@@ -45,8 +83,27 @@ namespace API.Controllers {
         }
 
         [HttpGet("account")]
-        public IActionResult ViewAllAccount() {
-            return Ok();
+        public IActionResult ViewAllAccount([FromQuery] AccountParam accountParam, [FromQuery] PagingParam pagingParam) {
+            var id = GetUserIdFromToken();
+            var user = _userService.Get(id);
+            if (user == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            if (user.Role != (int) Role.Administrator) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            var list = _adminService.GetAccounts(accountParam).Skip((pagingParam.PageNumber - 1) * pagingParam.PageSize).Take(pagingParam.PageSize);
+            return Ok(new BaseResponse {
+                Code = (int) HttpStatusCode.OK,
+                Message = "Get all accounts successfully",
+                Data = list.Select(p => _mapper.Map<UserResponse>(p)).ToList()
+            });
         }
         
         [HttpPatch("account")]
