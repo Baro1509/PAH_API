@@ -111,6 +111,7 @@ builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IWalletDAO, WalletDAO>();
 builder.Services.AddScoped<ITransactionDAO, TransactionDAO>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 //JWT authentication
 builder.Services.AddAuthentication(x => {
