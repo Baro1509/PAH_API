@@ -1,6 +1,7 @@
 ﻿using DataAccess;
 using DataAccess.Models;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Request.Param;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +49,23 @@ namespace Service.Implement {
             dbUser.Status = user.Status;
             dbUser.UpdatedAt = DateTime.Now;
             _userDAO.Update(dbUser);
+        }
+
+        public List<User> GetAccounts(AccountParam accountParam) {
+            var list = _userDAO.GetAll();
+            if ( accountParam.Name != null ) {
+                list = list.Where(p => p.Name.Contains(accountParam.Name));
+            }
+            if ( accountParam.Status != null ) {
+                list = list.Where(p => p.Status == accountParam.Status);
+            }
+            if ( accountParam.Role != null ) {
+                list = list.Where(p => p.Role == accountParam.Role);
+            }
+            if ( accountParam.Gender != null ) {
+                list = list.Where(p => p.Gender == accountParam.Gender);
+            }
+            return list.ToList();
         }
     }
 }

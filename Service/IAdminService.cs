@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using Request;
+using Request.Param;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Service {
     public interface IAdminService {
         public void CreateStaff(User user);
         public void UpdateStaff(User user);
+        public List<User> GetAccounts(AccountParam accountParam);
     }
 }
