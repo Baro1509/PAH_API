@@ -12,5 +12,6 @@ namespace Service {
         public void CreateStaff(User user);
         public void UpdateStaff(User user);
         public List<User> GetAccounts(AccountParam accountParam);
+        public void UpdateStatusAccount(int id, int status);
     }
 }

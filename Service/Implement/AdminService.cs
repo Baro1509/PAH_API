@@ -67,5 +67,14 @@ namespace Service.Implement {
             }
             return list.ToList();
         }
+
+        public void UpdateStatusAccount(int id, int status) {
+            var user = _userDAO.GetIgnoreStatus(id);
+            if ( user == null ) {
+                throw new Exception("404: Account not found");
+            }
+            user.Status = status;
+            _userDAO.Update(user);
+        }
     }
 }
