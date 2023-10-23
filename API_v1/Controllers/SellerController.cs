@@ -65,6 +65,7 @@ namespace API.Controllers
                 response.ProfilePicture = seller.ProfilePicture;
                 response.RegisteredAt = seller.RegisteredAt;
                 response.Ratings = seller.Ratings;
+                response.Status = seller.Status;
                 response.RecipientName = address.RecipientName;
                 response.RecipientPhone = address.RecipientPhone;
                 response.Province = address.Province;
@@ -97,8 +98,9 @@ namespace API.Controllers
                 Name = request.Name,
                 Phone = request.Phone,
                 ProfilePicture = request.ProfilePicture,
+                Status = (int)SellerStatus.Pending
             };
-            _sellerService.CreateSeller(userId, seller);
+            int existed = _sellerService.CreateSeller(userId, seller);
 
             Address address = new Address()
             {
@@ -115,13 +117,67 @@ namespace API.Controllers
                 Type = (int)AddressType.Pickup,
                 IsDefault = true
             };
-            _addressService.Create(address);
+            if(existed == 0)
+            {
+                _addressService.Create(address);
+                return Ok(new BaseResponse
+                {
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Request to become seller successfully",
+                    Data = null
+                });
+            }
+            else
+            {
+                _sellerService.UpdateSeller(seller);
+                _addressService.UpdateSellerAddress(address, userId);
+                return Ok(new BaseResponse
+                {
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Update seller successfully",
+                    Data = null
+                });
+            }
+        }
 
+        [Authorize]
+        [HttpGet("request")]
+        public IActionResult GetSellerRequestList()
+        {
+            var userId = GetUserIdFromToken();
+            var user = _userService.Get(userId);
+            if (user == null || (user.Role != (int)Role.Staff))
+            {
+                return Unauthorized(new ErrorDetails
+                {
+                    StatusCode = (int)HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            List<Seller> sellerRequests = _sellerService.GetSellerRequestList();
+            List<SellerRequestResponse> responses = _mapper.Map<List<SellerRequestResponse>>(sellerRequests);
+            foreach (var item in responses)
+            {
+                var pickupAddress = _addressService.GetPickupBySellerId(item.Id);
+                item.Province = pickupAddress.Province;
+                item.DistrictId = pickupAddress.DistrictId;
+                item.District = pickupAddress.District;
+                item.WardCode = pickupAddress.WardCode;
+                item.Ward = pickupAddress.Ward;
+                item.Street = pickupAddress.Street;
+
+                var sellerUser = _userService.Get(item.Id);
+                item.UserName = sellerUser.Name;
+                item.Email = sellerUser.Email;
+                item.Phone = sellerUser.Phone;
+                item.Gender = sellerUser.Gender;
+                item.Dob = sellerUser.Dob;
+            }
             return Ok(new BaseResponse
             {
                 Code = (int)HttpStatusCode.OK,
-                Message = "Request to become seller successfully",
-                Data = null
+                Message = "Get seller requests successfully",
+                Data = responses
             });
         }
     }

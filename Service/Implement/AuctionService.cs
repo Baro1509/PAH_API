@@ -1,6 +1,7 @@
 ﻿using DataAccess;
 using DataAccess.Models;
 using Hangfire;
+using Hangfire.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +17,11 @@ namespace Service.Implement
         private readonly IUserDAO _userDAO;
         private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO)
+        public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO, IBidDAO bidDAO)
         {
             _auctionDAO = auctionDAO;
             _userDAO = userDAO;
+            _bidDAO = bidDAO;
             _backgroundJobClient = backgroundJobClient;
         }
 
@@ -29,7 +31,47 @@ namespace Service.Implement
             try
             {
                 var auctions = _auctionDAO.GetAuctions()
-                    .Where(a => status == 0 || a.Status == status
+                    .Where(a => status == -1 || a.Status == status
+                    //&& a.Product.SellerId. == (int)Status.Available
+                    && (string.IsNullOrEmpty(title) || a.Title.Contains(title))
+                    && (materialId == 0 || a.Product.MaterialId == materialId)
+                    && (categoryId == 0 || a.Product.CategoryId == categoryId)
+                    && (a.RegistrationStart < DateTime.Now && DateTime.Now < a.RegistrationEnd));
+
+                //default (0): old -> new, 1: started at asc, 2: unknown, 3: unknown
+                switch (orderBy)
+                {
+                    case 1:
+                        auctions = auctions.OrderByDescending(a => a.StartedAt);
+                        break;
+                    case 2:
+                        auctions = auctions.OrderBy(p => p.StartingPrice);
+                        break;
+                    case 3:
+                        auctions = auctions.OrderByDescending(p => p.StartingPrice);
+                        break;
+                    default:
+                        auctions = auctions.OrderBy(a => a.StartedAt);
+                        break;
+                }
+
+                auctionList = auctions
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return auctionList;
+        }
+
+        public List<Auction> GetAllAuctions(string? title, int status, int categoryId, int materialId, int orderBy)
+        {
+            List<Auction> auctionList;
+            try
+            {
+                var auctions = _auctionDAO.GetAuctions()
+                    .Where(a => status == -1 || a.Status == status
                     //&& a.Product.SellerId. == (int)Status.Available
                     && (string.IsNullOrEmpty(title) || a.Title.Contains(title))
                     && (materialId == 0 || a.Product.MaterialId == materialId)
@@ -39,16 +81,16 @@ namespace Service.Implement
                 switch (orderBy)
                 {
                     case 1:
-                        auctions = auctions.OrderBy(a => a.StartedAt);
-                        break;
-                    //case 2:
-                    //    auctions = auctions.OrderByDescending(p => p.StartedAt);
-                    //    break;
-                    //case 3:
-                    //    auctions = auctions.OrderBy(p => p.Price);
-                    //    break;
-                    default:
                         auctions = auctions.OrderByDescending(a => a.StartedAt);
+                        break;
+                    case 2:
+                        auctions = auctions.OrderBy(p => p.StartingPrice);
+                        break;
+                    case 3:
+                        auctions = auctions.OrderByDescending(p => p.StartingPrice);
+                        break;
+                    default:
+                        auctions = auctions.OrderBy(a => a.StartedAt);
                         break;
                 }
 
@@ -89,13 +131,15 @@ namespace Service.Implement
             return _auctionDAO.GetAuctionById(id);
         }
 
-        public List<Auction> GetAuctionBySellerId(int sellerId)
+        public List<Auction> GetAuctionBySellerId(int sellerId, int status)
         {
             if (sellerId == null)
             {
                 throw new Exception("404: Seller not found");
             }
-            return _auctionDAO.GetAuctionBySellerId(sellerId).ToList();
+            return _auctionDAO.GetAuctionBySellerId(sellerId)
+                .Where(a => status == -1 || a.Status == status)
+                .ToList();
         }
 
         public List<Auction> GetAuctionJoined(int bidderId)
@@ -107,9 +151,18 @@ namespace Service.Implement
             return _auctionDAO.GetAuctionJoined(bidderId).ToList();
         }
 
+        public List<Auction> GetAuctionJoinedByStatus(int status, int bidderId)
+        {
+            if (bidderId == null)
+            {
+                throw new Exception("404: Bidder not found");
+            }
+            return _auctionDAO.GetAuctionJoined(bidderId).Where(a => a.Status == status).ToList();
+        }
+
         public void CreateAuction(Auction auction)
         {
-            auction.EntryFee = 0.1m * auction.StartingPrice;
+            auction.EntryFee = 0.05m * auction.StartingPrice;
             auction.StaffId = null;
             auction.Status = (int) AuctionStatus.Unassigned;
             auction.CreatedAt = DateTime.Now;
@@ -128,58 +181,95 @@ namespace Service.Implement
                 throw new Exception("404: Staff not found");
             }
             Auction auction = _auctionDAO.GetAuctionById(id);
-            if (auction.Status > (int)AuctionStatus.Unassigned)
+            if (auction.Status == (int)AuctionStatus.Rejected)
+            {
+                throw new Exception("400: This auction hasn been rejected");
+            }
+            else if (auction.Status > (int)AuctionStatus.Unassigned && auction.Status != (int)AuctionStatus.Rejected)
             {
                 throw new Exception("400: This auction has been assigned");
-            }
+            } 
             auction.StaffId = staffId;
-            auction.Status = (int)AuctionStatus.Pending;
+            auction.Status = (int)AuctionStatus.Assigned;
             auction.UpdatedAt = DateTime.Now;
             _auctionDAO.UpdateAuction(auction);
         }
 
-        public void StaffApproveAuction(int id, DateTime startedAt, DateTime endedAt)
+        public void ManagerApproveAuction(int id)
         {
+            if (id == null)
+            {
+                throw new Exception("404: Auction not found");
+            }
             Auction auction = GetAuctionById(id);
 
-            if(auction.Status == (int) AuctionStatus.Unassigned)
-            {
-                throw new Exception("400: This auction is unassigned.");
-            }
-            else if (auction.Status == (int) AuctionStatus.Pending)
-            {
-                auction.Status = (int)AuctionStatus.Approved;
-                auction.StartedAt = startedAt;
-                auction.EndedAt = endedAt;
-                auction.UpdatedAt = DateTime.Now;
-                _auctionDAO.UpdateAuction(auction);
-                //Schedule task to open/end auction
-                _backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int) AuctionStatus.Opened), auction.StartedAt.Value);
-                _backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int) AuctionStatus.Ended), auction.EndedAt.Value);
-            } 
-            else
+            if(auction.Status > (int) AuctionStatus.Pending && auction.Status != (int)AuctionStatus.Rejected)
             {
                 throw new Exception("400: This auction is already approved.");
+            } 
+            else if (auction.Status == (int)AuctionStatus.Rejected)
+            {
+                throw new Exception("400: This auction is already rejected.");
+            }
+            else
+            {                
+                auction.Status = (int)AuctionStatus.Unassigned;
+                auction.UpdatedAt = DateTime.Now;
+                _auctionDAO.UpdateAuction(auction);
+                ////Schedule task to open/end auction
+                //_backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int)AuctionStatus.Opened), auction.StartedAt.Value);
+                //_backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int)AuctionStatus.Ended), auction.EndedAt.Value);
             }
         }
 
-        public void StaffRejectAuction(int id)
+        public void ManagerRejectAuction(int id)
         {
+            if (id == null)
+            {
+                throw new Exception("404: Auction not found");
+            }
             Auction auction = GetAuctionById(id);
 
-            if (auction.Status == (int)AuctionStatus.Unassigned)
+            if (auction.Status > (int)AuctionStatus.Pending && auction.Status != (int)AuctionStatus.Rejected)
             {
-                throw new Exception("400: This auction is unassigned.");
+                throw new Exception("400: This auction is already approved.");
             }
-            else if (auction.Status == (int)AuctionStatus.Pending)
+            else if (auction.Status == (int)AuctionStatus.Rejected)
+            {
+                throw new Exception("400: This auction is already rejected.");
+            }
+            else
             {
                 auction.Status = (int)AuctionStatus.Rejected;
                 auction.UpdatedAt = DateTime.Now;
                 _auctionDAO.UpdateAuction(auction);
             }
+        }
+
+        public void StaffSetAuctionTime(int id, DateTime registrationStart, DateTime registrationEnd, DateTime startedAt, DateTime endedAt)
+        {
+            if (id == null)
+            {
+                throw new Exception("404: Auction not found");
+            }
+            Auction auction = GetAuctionById(id);
+            if(auction.Status < (int)AuctionStatus.Assigned)
+            {
+                throw new Exception("400: This auction hasn't been assigned to you");
+            } 
+            else if(auction.Status > (int)AuctionStatus.RegistrationOpen)
+            {
+                throw new Exception("400: You cannot edit this auction anymore");
+            }
             else
             {
-                throw new Exception("400: This auction cannot be rejected.");
+                auction.RegistrationStart = registrationStart;
+                auction.RegistrationEnd = registrationEnd;
+                auction.StartedAt = startedAt;
+                auction.EndedAt = endedAt;
+                auction.Status = (int)AuctionStatus.RegistrationOpen;
+                auction.UpdatedAt = DateTime.Now;
+                _auctionDAO.UpdateAuction(auction);
             }
         }
 
@@ -194,13 +284,45 @@ namespace Service.Implement
             _auctionDAO.UpdateAuction(auction);
         }
 
+        public bool CheckRegistration(int bidderId, int auctionId)
+        {
+            if(bidderId == null)
+            {
+                throw new Exception("400: Bidder not found");
+            }
+            if(auctionId == null)
+            {
+                throw new Exception("400: Auction not found");
+            }
+            var checkRegistration = _bidDAO.GetBidsByAuctionId(auctionId)
+                    .Where(b => b.BidderId == bidderId && b.Status == (int)BidStatus.Register)
+                    .Any();
+            return checkRegistration;
+        }
+
+        public bool CheckRegistration(int bidderId, int auctionId)
+        {
+            if(bidderId == null)
+            {
+                throw new Exception("400: Bidder not found");
+            }
+            if(auctionId == null)
+            {
+                throw new Exception("400: Auction not found");
+            }
+            var checkRegistration = _bidDAO.GetBidsByAuctionId(auctionId)
+                    .Where(b => b.BidderId == bidderId && b.Status == (int)BidStatus.Register)
+                    .Any();
+            return checkRegistration;
+        }
+
         //public void TestSchedule() {
         //    var auction = _auctionDAO.GetAuctionById(3);
 
         //    auction.StartedAt = DateTime.Now.AddMinutes(1);
         //    auction.EndedAt = DateTime.Now.AddMinutes(2);
         //    _auctionDAO.UpdateAuction(auction);
-        //    _backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int) AuctionStatus.Opened), auction.StartedAt.Value);
+        //_backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int) AuctionStatus.Opened), auction.StartedAt.Value);
         //    _backgroundJobClient.Schedule(() => HostAuction(auction.Id, (int) AuctionStatus.Ended), auction.EndedAt.Value);
         //}
 

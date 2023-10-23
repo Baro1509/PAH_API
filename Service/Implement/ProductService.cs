@@ -44,7 +44,7 @@ namespace Service.Implement
                 switch (orderBy)
                 {
                     case 1:
-                        products = products.OrderByDescending(p => p.Condition);
+                        products = products.OrderBy(p => p.CreatedAt);
                         break;
                     case 2:
                         products = products.OrderBy(p => p.Price);
@@ -53,7 +53,7 @@ namespace Service.Implement
                         products = products.OrderByDescending(p => p.Price);
                         break;
                     default:
-                        products = products.OrderBy(p => p.Condition);
+                        products = products.OrderByDescending(p => p.CreatedAt);
                         break;
                 }
 
@@ -85,7 +85,7 @@ namespace Service.Implement
             return _productDAO.GetProductsBySellerId(sellerId).ToList();
         }
 
-        public void CreateProduct(Product product, Auction auction)
+        public int CreateProduct(Product product, Auction auction)
         {
             product.Status = (int) Status.Available;
             product.Ratings = 0;
@@ -99,11 +99,12 @@ namespace Service.Implement
                 auction.StartingPrice = product.Price;
                 auction.EntryFee = 0.1m * auction.StartingPrice;
                 auction.StaffId = null;
-                auction.Status = (int) AuctionStatus.Unassigned;
+                auction.Status = (int) AuctionStatus.Pending;
                 auction.CreatedAt = DateTime.Now;
                 auction.UpdatedAt = DateTime.Now;
                 _auctionDAO.CreateAuction(auction);
-            }            
+            }          
+            return product.Id;
         }
 
         public Product UpdateProduct(int id, Product product, Auction auction)
@@ -153,9 +154,7 @@ namespace Service.Implement
 
                 foreach (Auction auction in auctionLists)
                 {
-                    if (auction.Status != (int)AuctionStatus.Unassigned 
-                        && auction.Status != (int)AuctionStatus.Sold 
-                        && auction.Status != (int)AuctionStatus.Expired)
+                    if (auction.Status != (int)AuctionStatus.Pending)
                     {
                         throw new Exception("400: This product has an active auction.");
                     }

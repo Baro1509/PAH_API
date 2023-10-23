@@ -94,6 +94,22 @@ namespace Service.Implement {
             _sellerDAO.UpdateSeller(seller);
         }
 
+        public List<User> GetAvailableStaffs()
+        {
+            var availableStaffs = _userDAO.GetAll()
+                .Where(u => u.Role == (int)Role.Staff 
+                && u.Auctions.All(a => a.Status != (int)AuctionStatus.Assigned 
+                && a.Status != (int)AuctionStatus.RegistrationOpen 
+                && a.Status != (int)AuctionStatus.Opened))
+                .ToList();
+            return availableStaffs;
+        }
+
+        public List<User> GetReactivateRequestList()
+        {
+            return _userDAO.GetAll().Where(u => u.Status == (int)Status.Unavailable).ToList();
+        }
+
         public User Login(string email, string password) {
             var user = _userDAO.GetByEmail(email);
             if (user != null) {

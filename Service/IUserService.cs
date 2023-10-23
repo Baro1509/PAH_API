@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using Request;
+using Respon.UserRes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,8 @@ namespace Service {
         public void Deactivate(User user);  
         public void AcceptSeller(Seller seller);
         public void RejectSeller(Seller seller);
+        public List<User> GetAvailableStaffs();
+        public List<User> GetReactivateRequestList();
 
         public Tokens AddRefreshToken(int id);
         public Token GetSavedRefreshToken(int id, string refreshToken);

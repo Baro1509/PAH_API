@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using DataAccess;
+using DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,20 @@ namespace Service
     public interface IAuctionService
     {
         public List<Auction> GetAuctions(string? title, int status, int categoryId, int materialId, int orderBy);
+        public List<Auction> GetAllAuctions(string? title, int status, int categoryId, int materialId, int orderBy);
         public Auction GetAuctionById(int id);
         public List<Auction> GetAuctionAssigned(int staffId);
         public List<Auction> GetAuctionsByProductId(int productId);
         public List<Auction> GetAuctionJoined(int bidderId);
-        public List<Auction> GetAuctionBySellerId(int sellerId);
+        public List<Auction> GetAuctionJoinedByStatus(int status, int bidderId);
+        public List<Auction> GetAuctionBySellerId(int sellerId, int status);
         public void CreateAuction(Auction auction);
         public void AssignStaff(int id, int staffId);
-        public void StaffApproveAuction(int id, DateTime startedAt, DateTime endedAt);
-        public void StaffRejectAuction(int id);
+        public void ManagerApproveAuction(int id);
+        public void ManagerRejectAuction(int id);
+        public void StaffSetAuctionTime(int id, DateTime registrationStart, DateTime registrationEnd, DateTime startedAt, DateTime endedAt);
         public void HostAuction(int auctionId, int status);
+        public bool CheckRegistration(int bidderId, int auctionId);
         //public void TestSchedule();
         //public void OpenAuction(int id);
         //public void EndAuction(int id);
