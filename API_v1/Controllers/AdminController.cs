@@ -10,6 +10,8 @@ using Request.Param;
 using Respon;
 using Respon.UserRes;
 using Service;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace API.Controllers {
@@ -98,17 +100,47 @@ namespace API.Controllers {
                     Message = "You are not allowed to access this"
                 });
             }
-            var list = _adminService.GetAccounts(accountParam).Skip((pagingParam.PageNumber - 1) * pagingParam.PageSize).Take(pagingParam.PageSize);
+            var list = _adminService.GetAccounts(accountParam);
             return Ok(new BaseResponse {
                 Code = (int) HttpStatusCode.OK,
                 Message = "Get all accounts successfully",
-                Data = list.Select(p => _mapper.Map<UserResponse>(p)).ToList()
+                Data = new { 
+                    Count = list.Count,
+                    List = list.Skip((pagingParam.PageNumber - 1) * pagingParam.PageSize).Take(pagingParam.PageSize).Select(p => _mapper.Map<UserResponse>(p)).ToList()
+                }
             });
         }
         
         [HttpPatch("account")]
-        public IActionResult EditStatusAccount() {
-            return Ok();
+        public IActionResult EditStatusAccount([FromBody] AccountUpdate request) {
+            var id = GetUserIdFromToken();
+            var user = _userService.Get(id);
+            if (user == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            if (user.Role != (int) Role.Administrator) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            _adminService.UpdateStatusAccount(request.Id, request.Status);
+            return Ok(new BaseResponse {
+                Code = (int) HttpStatusCode.OK,
+                Message = "Update account status successfully",
+                Data = null
+            });
+        }
+
+        public class AccountUpdate {
+            [Required]
+            public int Id { get; set; }
+            [Required]
+            [Range(0, 1)]
+            public int Status { get; set; }
         }
     }
 }
