@@ -2,6 +2,7 @@
 using DataAccess.Models;
 using Hangfire;
 using Hangfire.Storage;
+using Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +17,20 @@ namespace Service.Implement
         private readonly IBidDAO _bidDAO;
         private readonly IUserDAO _userDAO;
         private readonly IBackgroundJobClient _backgroundJobClient;
+        private readonly IAddressDAO _addressDAO;
+        private readonly IOrderDAO _orderDAO;
+        private readonly IWalletService _walletService;
 
-        public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO, IBidDAO bidDAO)
+        public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO, IBidDAO bidDAO,
+            IAddressDAO addressDAO, IOrderDAO orderDAO, IWalletService walletService)
         {
             _auctionDAO = auctionDAO;
             _userDAO = userDAO;
             _bidDAO = bidDAO;
             _backgroundJobClient = backgroundJobClient;
+            _addressDAO = addressDAO;
+            _orderDAO = orderDAO;
+            _walletService = walletService;
         }
 
         public List<Auction> GetAuctions(string? title, int status, int categoryId, int materialId, int orderBy)
@@ -298,6 +306,52 @@ namespace Service.Implement
                     .Where(b => b.BidderId == bidderId && b.Status == (int)BidStatus.Register)
                     .Any();
             return checkRegistration;
+        }
+
+        public void CreateAuctionOrder(AuctionOrderRequest request) {
+            var auction = _auctionDAO.GetAuctionById(request.AuctionId);
+            if (auction == null) {
+                throw new Exception("404: Auction not found when creating order");
+            }
+            if (auction.Status != (int) AuctionStatus.Ended) {
+                throw new Exception("401: This auction cannot be created order with");
+            }
+
+            var address = _addressDAO.Get(request.AddressId);
+            if (address == null) {
+                throw new Exception("404: Address not found when creating auction order");
+            }
+
+            var existOrder = _orderDAO.GetByProductId(auction.ProductId.Value);
+            if (existOrder != null) {
+                throw new Exception("409: This auction cannot be created with more order");
+            }
+
+            var now = DateTime.Now;
+
+            var order = new Order {
+                BuyerId = request.WinnerId,
+                SellerId = auction.Product.SellerId,
+                RecipientName = address.RecipientName,
+                RecipientPhone = address.RecipientPhone,
+                RecipientAddress = address.Street + ", " + address.Ward + ", " + address.District + ", " + address.Province,
+                OrderDate = now,
+                TotalAmount = 0m,
+                ShippingCost = request.ShippingPrice,
+                Status = (int) OrderStatus.Pending,
+                OrderItems = new List<OrderItem>()
+            };
+            order.OrderItems.Add(new OrderItem {
+                ProductId = auction.ProductId.Value,
+                Price = 0m,
+                Quantity = 1
+                //ImageUrl = auction.Product.ProductImages.FirstOrDefault().ImageUrl
+            });
+            _orderDAO.Create(order);
+            var orderList = _orderDAO.GetAllByBuyerIdAfterCheckout(request.WinnerId, now).ToList();
+            foreach(var item in orderList) {
+                _walletService.CheckoutWallet(request.WinnerId, item.Id, (int) OrderStatus.ReadyForPickup);
+            }
         }
 
         //public void TestSchedule() {
