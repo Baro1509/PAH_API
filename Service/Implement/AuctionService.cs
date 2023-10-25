@@ -327,6 +327,15 @@ namespace Service.Implement
                 throw new Exception("409: This auction cannot be created with more order");
             }
 
+            var wallet = _walletService.GetByCurrentUser(request.WinnerId);
+            if (wallet == null) {
+                throw new Exception("404: Wallet not found when creating auction order");
+            }
+            if (wallet.AvailableBalance < request.ShippingPrice) {
+                throw new Exception("401: Your wallet does not have enough balance to create order");
+            }
+
+
             var now = DateTime.Now;
 
             var order = new Order {
