@@ -32,6 +32,6 @@ namespace Service
         //public void OpenAuction(int id);
         //public void EndAuction(int id);
 
-        public void CreateAuctionOrder(AuctionOrderRequest request);
+        public void CreateAuctionOrder(int userId, AuctionOrderRequest request);
     }
 }

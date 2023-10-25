@@ -26,7 +26,7 @@ namespace Service.Implement
 
         public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO, 
             IBidDAO bidDAO, IWalletDAO walletDAO, ITransactionDAO transactionDAO, IOrderDAO orderDAO, 
-            IAddressDAO addressDAO, IOrderDAO orderDAO, IWalletService walletService)
+            IAddressDAO addressDAO, IWalletService walletService)
         {
             _auctionDAO = auctionDAO;
             _userDAO = userDAO;
@@ -403,7 +403,7 @@ namespace Service.Implement
             return checkRegistration;
         }
 
-        public void CreateAuctionOrder(AuctionOrderRequest request) {
+        public void CreateAuctionOrder(int userId, AuctionOrderRequest request) {
             var auction = _auctionDAO.GetAuctionById(request.AuctionId);
             if (auction == null) {
                 throw new Exception("404: Auction not found when creating order");
@@ -422,7 +422,7 @@ namespace Service.Implement
                 throw new Exception("409: This auction cannot be created with more order");
             }
 
-            var wallet = _walletService.GetByCurrentUser(request.WinnerId);
+            var wallet = _walletService.GetByCurrentUser(userId);
             if (wallet == null) {
                 throw new Exception("404: Wallet not found when creating auction order");
             }
@@ -434,7 +434,7 @@ namespace Service.Implement
             var now = DateTime.Now;
 
             var order = new Order {
-                BuyerId = request.WinnerId,
+                BuyerId = userId,
                 SellerId = auction.Product.SellerId,
                 RecipientName = address.RecipientName,
                 RecipientPhone = address.RecipientPhone,
@@ -452,9 +452,9 @@ namespace Service.Implement
                 //ImageUrl = auction.Product.ProductImages.FirstOrDefault().ImageUrl
             });
             _orderDAO.Create(order);
-            var orderList = _orderDAO.GetAllByBuyerIdAfterCheckout(request.WinnerId, now).ToList();
+            var orderList = _orderDAO.GetAllByBuyerIdAfterCheckout(userId, now).ToList();
             foreach(var item in orderList) {
-                _walletService.CheckoutWallet(request.WinnerId, item.Id, (int) OrderStatus.ReadyForPickup);
+                _walletService.CheckoutWallet(userId, item.Id, (int) OrderStatus.ReadyForPickup);
             }
         }
         public bool CheckWinner(int bidderId, int auctionId)
