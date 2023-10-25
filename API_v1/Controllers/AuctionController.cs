@@ -547,5 +547,15 @@ namespace API.Controllers
                 Data = null
             });
         }
+
+        [HttpPost("order/create")]
+        public IActionResult CreateAuctionOrder([FromBody] AuctionOrderRequest request) {
+            _auctionService.CreateAuctionOrder(request);
+            return Ok(new BaseResponse {
+                Code = (int) HttpStatusCode.OK,
+                Message = "Create auction order successfully",
+                Data = null
+            });
+        }
     }
 }
