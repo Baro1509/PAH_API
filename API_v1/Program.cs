@@ -25,6 +25,7 @@ var emailConfig = builder.Configuration
 builder.Services.AddSingleton(emailConfig);
 
 builder.Services.AddControllers();
+builder.Services.AddMvc();
 builder.Services.AddHttpClient("GHN", httpClient => {
     httpClient.BaseAddress = new Uri(builder.Configuration["API3rdParty:GHN:dev:url"]);
     httpClient.DefaultRequestHeaders.Add("token", builder.Configuration["API3rdParty:GHN:token"]);

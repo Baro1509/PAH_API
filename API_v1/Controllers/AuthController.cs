@@ -124,5 +124,11 @@ namespace API.Controllers {
                 Data = null
             });
         }
+
+        [HttpGet("/api/verifyaccount/{code:string}")]
+        [AllowAnonymous]
+        public IActionResult Verify(string code) {
+            return Redirect("/verify");
+        }
     }
 }
