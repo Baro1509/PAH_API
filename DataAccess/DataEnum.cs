@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace DataAccess {
     public enum Status {
         Available = 1,
-        Unavailable = 0
+        Unavailable = 0,
+        Unverified = 2
     }
 
     public enum Role {
