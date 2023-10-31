@@ -2,7 +2,7 @@
 
 namespace API.Controllers {
     public class MvcController : Controller {
-        [HttpGet("/verify")]
+        [HttpGet("/mvc/verify")]
         public IActionResult Index() {
             return View("/View/Mvc/Index.cshtml");
         }
