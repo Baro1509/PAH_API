@@ -10,7 +10,6 @@ namespace Service {
         public string GenerateAccessToken(int id);
         public string GenerateRefreshToken();
         public string GenerateResetToken();
-        public string GenerateVerifyToken(int length);
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
     }
 }

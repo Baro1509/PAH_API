@@ -32,7 +32,5 @@ namespace Service {
 
         public void AddResetToken(int id, string token);
         public void ResetPassword(ResetPasswordRequest request);
-        public void VerifyAccount(string email, string code);
-        public string CreateVerificationCode(string email);
     }
 }
