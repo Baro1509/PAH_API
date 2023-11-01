@@ -285,13 +285,9 @@ namespace Service.Implement {
                 return;
             }
 
-            var wallet = _walletService.GetByCurrentUser(order.SellerId.Value);
-            if (wallet == null) {
-                throw new Exception("404: Wallet not found when updating to done");
-            }
-            
             order.Status = (int) OrderStatus.Done;
             _orderDAO.UpdateOrder(order);
+            _walletService.AddSellerBalance(orderId);
         }
 
         public async Task CreateShippingOrder(int orderId) {
