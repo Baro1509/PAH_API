@@ -88,6 +88,7 @@ namespace DataAccess {
         Deposit = 1,
         Withdraw = 2,
         Payment = 3,
-        Refund = 4
+        Refund = 4,
+        DoneOrder = 5
     }
 }
