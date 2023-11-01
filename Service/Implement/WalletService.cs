@@ -148,5 +148,33 @@ namespace Service.Implement
                 Status = (int) Status.Available
             });
         }
+
+        public void AddSellerBalance(int orderId) {
+            var order = _orderDAO.Get(orderId);
+            if (order == null) {
+                throw new Exception("404: Order not found when add balance to seller when done order");
+            }
+            if (order.Status != (int) OrderStatus.Done) {
+                throw new Exception("401: Order is not done, cannot add balance");
+            }
+
+            var wallet = _walletDAO.Get(order.SellerId.Value);
+            if (wallet == null) {
+                throw new Exception("404: Wallet not found when add balance to seller when done order");
+            }
+            var amount = order.ShippingCost + order.TotalAmount * .97m ;
+            wallet.AvailableBalance += amount;
+            _walletDAO.Update(wallet);
+            _transactionDAO.Create(new Transaction {
+                Id = 0,
+                WalletId = wallet.Id,
+                PaymentMethod = (int) PaymentType.Wallet,
+                Amount = amount,
+                Type = (int) TransactionType.DoneOrder,
+                Date = DateTime.Now,
+                Description = $"Done for order: {orderId}",
+                Status = (int) Status.Available
+            });
+        }
     }
 }
