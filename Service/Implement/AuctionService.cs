@@ -24,10 +24,11 @@ namespace Service.Implement
         private readonly IAddressDAO _addressDAO;
         private readonly IWalletService _walletService;
         private readonly IOrderService _orderService;
+        private readonly IProductImageDAO _productImageDAO;     
 
         public AuctionService (IAuctionDAO auctionDAO, IBackgroundJobClient backgroundJobClient, IUserDAO userDAO, 
             IBidDAO bidDAO, IWalletDAO walletDAO, ITransactionDAO transactionDAO, IOrderDAO orderDAO, 
-            IAddressDAO addressDAO, IWalletService walletService, IOrderService orderService)
+            IAddressDAO addressDAO, IWalletService walletService, IProductImageDAO productImageDAO, IOrderService orderService)
         {
             _auctionDAO = auctionDAO;
             _userDAO = userDAO;
@@ -39,6 +40,7 @@ namespace Service.Implement
             _walletDAO = walletDAO;
             _transactionDAO = transactionDAO;
             _orderService = orderService;
+            _productImageDAO = productImageDAO;
         }
 
         public List<Auction> GetAuctions(string? title, int status, int categoryId, int materialId, int orderBy)
@@ -262,7 +264,8 @@ namespace Service.Implement
             }
         }
 
-        public void StaffSetAuctionTime(int id, DateTime registrationStart, DateTime registrationEnd, DateTime startedAt, DateTime endedAt)
+        public void StaffSetAuctionTime(int id, DateTime registrationStart, DateTime registrationEnd, DateTime startedAt, DateTime endedAt,
+            decimal step)
         {
             if (id == null)
             {
@@ -285,6 +288,7 @@ namespace Service.Implement
                 auction.EndedAt = endedAt;
                 auction.Status = (int)AuctionStatus.RegistrationOpen;
                 auction.UpdatedAt = DateTime.Now;
+                auction.Step = step;
                 _auctionDAO.UpdateAuction(auction);
             }
         }
@@ -372,18 +376,35 @@ namespace Service.Implement
                         }                        
 
                         _walletDAO.Update(bidderWallet);
+                        //_transactionDAO.Create(new Transaction()
+                        //{
+                        //    Id = 0,
+                        //    WalletId = bidderWallet.Id,
+                        //    PaymentMethod = (int)PaymentType.Wallet,
+                        //    Amount = bid.BidAmount,
+                        //    Type = (int)TransactionType.Refund,
+                        //    Date = DateTime.Now,
+                        //    Description = $"Return balance due to ending auction {auctionId}",
+                        //    Status = (int)Status.Available,
+                        //});
+                    }    
+                    else
+                    {
+                        Wallet winnerWallet = _walletDAO.Get((int)bid.BidderId); // lay cai wallet cua thang thang ra
+                        winnerWallet.LockedBalance -= bid.BidAmount;
+                        _walletDAO.Update(winnerWallet);
                         _transactionDAO.Create(new Transaction()
                         {
                             Id = 0,
-                            WalletId = bidderWallet.Id,
+                            WalletId = winnerWallet.Id,
                             PaymentMethod = (int)PaymentType.Wallet,
                             Amount = bid.BidAmount,
-                            Type = (int)TransactionType.Refund,
+                            Type = (int)TransactionType.Payment,
                             Date = DateTime.Now,
-                            Description = $"Return balance due to ending auction {auctionId}",
+                            Description = $"Thanh toán cuộc đấu giá '{auction.Title}'",
                             Status = (int)Status.Available,
                         });
-                    }    
+                    }
                 }
                 return winnerBid;
             }
@@ -432,8 +453,8 @@ namespace Service.Implement
                 throw new Exception("401: Your wallet does not have enough balance to create order");
             }
 
-
             var now = DateTime.Now;
+            var highestBid = _bidDAO.GetBidsByAuctionId(request.AuctionId).OrderByDescending(b => b.BidAmount).FirstOrDefault();
 
             var order = new Order {
                 BuyerId = userId,
@@ -442,16 +463,17 @@ namespace Service.Implement
                 RecipientPhone = address.RecipientPhone,
                 RecipientAddress = address.Street + ", " + address.Ward + ", " + address.District + ", " + address.Province,
                 OrderDate = now,
-                TotalAmount = 0m,
+                TotalAmount = highestBid.BidAmount,
                 ShippingCost = request.ShippingPrice,
-                Status = (int) OrderStatus.Pending,
+                Status = (int) OrderStatus.ReadyForPickup,
                 OrderItems = new List<OrderItem>()
             };
+
             order.OrderItems.Add(new OrderItem {
                 ProductId = auction.ProductId.Value,
-                Price = 0m,
-                Quantity = 1
-                //ImageUrl = auction.Product.ProductImages.FirstOrDefault().ImageUrl
+                Price = highestBid.BidAmount,
+                Quantity = 1,
+                ImageUrl = _productImageDAO.GetByProductId((int)auction.ProductId).FirstOrDefault().ImageUrl
             });
             _orderDAO.Create(order);
             var orderList = _orderDAO.GetAllByBuyerIdAfterCheckout(userId, now).ToList();
