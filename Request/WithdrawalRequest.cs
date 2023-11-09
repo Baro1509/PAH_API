@@ -22,4 +22,12 @@ namespace Request {
             }
         }
     }
+
+    public class UpdateWithdrawRequest {
+        [Required]
+        public int WithdrawalId { get; set; }
+        [Required]
+        [Range(2,3)]
+        public int Status { get; set; }
+    }
 }
