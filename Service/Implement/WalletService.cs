@@ -230,6 +230,7 @@ namespace Service.Implement
             _transactionDAO.Create(transaction);
 
             withdrawal.Status = (int) WithdrawalStatus.Done;
+            withdrawal.ManagerId = managerId;
             withdrawal.UpdatedAt = DateTime.Now;
             _withdrawalDAO.Update(withdrawal);
         }
@@ -241,6 +242,7 @@ namespace Service.Implement
             }
             withdrawal.Status = (int) WithdrawalStatus.Rejected;
             withdrawal.UpdatedAt = DateTime.Now;
+            withdrawal.ManagerId = managerId;
             _withdrawalDAO.Update(withdrawal);
         }
     }
