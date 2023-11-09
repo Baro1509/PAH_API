@@ -10,6 +10,10 @@ namespace DataAccess.Implement {
         public WithdrawalDAO(PlatformAntiquesHandicraftsContext context) : base(context) {
         }
 
+        public Withdrawal Get(int id) {
+            return GetAll().FirstOrDefault(p => p.Id == id);
+        }
+
         public IQueryable<Withdrawal> GetByUserId(int userId) {
             return GetAll().Where(p => p.WalletId == userId);
         }

@@ -11,5 +11,6 @@ namespace DataAccess {
         public void Update(Withdrawal withdrawal);
         public IQueryable<Withdrawal> GetByUserId(int userId);
         public IQueryable<Withdrawal> GetAll();
+        public Withdrawal Get(int id);
     }
 }
