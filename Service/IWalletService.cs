@@ -20,6 +20,7 @@ namespace Service
         public void RefundOrder(int orderId);
         public void AddSellerBalance(int orderId);
 
+        public List<Withdrawal> GetWithdrawalByUserId(int userId);
         public void CreateWithdrawal(int userId, WithdrawalRequest request);
         public void ApproveWithdrawal(int withdrawalId, int managerId);
         public void DenyWithdrawal(int withdrawalId, int managerId);

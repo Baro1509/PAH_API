@@ -245,5 +245,9 @@ namespace Service.Implement
             withdrawal.ManagerId = managerId;
             _withdrawalDAO.Update(withdrawal);
         }
+
+        public List<Withdrawal> GetWithdrawalByUserId(int userId) {
+            return _withdrawalDAO.GetByUserId(userId).ToList();
+        }
     }
 }
