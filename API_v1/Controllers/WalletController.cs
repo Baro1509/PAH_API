@@ -141,6 +141,37 @@ namespace API.Controllers
             });
         }
         
+        [HttpGet("withdraw")]
+        public IActionResult GetWithdrawal() {
+            var userId = GetUserIdFromToken();
+            if (userId == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not logged in"
+                });
+            }
+
+            var user = _userService.Get(userId);
+            if (user == null) {
+                return Unauthorized(new ErrorDetails {
+                    StatusCode = (int) HttpStatusCode.Unauthorized,
+                    Message = "You are not allowed to access this"
+                });
+            }
+            //if (user.Role != (int) Role.Seller && user.Role != (int) Role.Buyer) {
+            //    return Unauthorized(new ErrorDetails {
+            //        StatusCode = (int) HttpStatusCode.Unauthorized,
+            //        Message = "You are not allowed to access this"
+            //    });
+            //}
+            var data = _walletService.GetWithdrawalByUserId(userId);
+            return Ok(new BaseResponse {
+                Code = (int) HttpStatusCode.OK,
+                Message = "Create withdrawal successfully",
+                Data = _mapper.Map<WithdrawalResponse>(data)
+            });
+        }
+        
         [HttpPost("/api/manager/withdraw")]
         public IActionResult UpdateWithdrawal([FromBody] UpdateWithdrawRequest request) {
             var userId = GetUserIdFromToken();
